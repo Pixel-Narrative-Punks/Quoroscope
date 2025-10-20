@@ -1,0 +1,17 @@
+package com.pixnpunk.stock.domain.di
+
+import com.pixnpunk.stock.domain.usecase.DeleteLocalGameEntries
+import com.pixnpunk.stock.domain.usecase.FetchLocalSourceUseCase
+import com.pixnpunk.stock.domain.usecase.FetchRemoteDescUseCase
+import com.pixnpunk.stock.domain.usecase.FetchRemoteSourceUseCase
+import com.pixnpunk.stock.domain.usecase.FillAndInsertEntryUseCase
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+
+val domainModule = module {
+    singleOf(::FillAndInsertEntryUseCase)
+    singleOf(::FetchRemoteSourceUseCase)
+    singleOf(::FetchRemoteDescUseCase)
+    singleOf(::FetchLocalSourceUseCase)
+    singleOf(::DeleteLocalGameEntries)
+}

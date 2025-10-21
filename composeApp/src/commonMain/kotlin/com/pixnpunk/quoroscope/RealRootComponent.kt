@@ -63,7 +63,7 @@ class RealRootComponent(
         if (oldConfig != null && oldConfig.dialogsState == DialogsState.DIALOG_DOWNLOAD_GAME) {
             dialogsNavigation.activate(
                 oldConfig.copy(
-                    unfilledEntry = GameEntry(
+                    unfilledEntry = oldConfig.unfilledEntry.copy(
                         gameDirPath = rootDirPath
                     )
                 )
@@ -168,7 +168,14 @@ class RealRootComponent(
                     entryShow = cfg.entryShow,
                     showSelectGameDialog = { selGameDialog(it) },
                     showEditGameDialog = { },
-                    showDownloadGameDialog = {  },
+                    showDownloadGameDialog = {
+                        dialogsNavigation.activate(
+                            DialogsConfig(
+                                dialogsState = DialogsState.DIALOG_DOWNLOAD_GAME,
+                                unfilledEntry = it
+                            )
+                        )
+                    },
                     onDismissed = panelNavigation::dismissDetails
                 )
             }

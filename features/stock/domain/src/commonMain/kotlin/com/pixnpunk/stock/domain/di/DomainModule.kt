@@ -1,6 +1,7 @@
 package com.pixnpunk.stock.domain.di
 
 import com.pixnpunk.stock.domain.usecase.DeleteLocalGameEntries
+import com.pixnpunk.stock.domain.usecase.DownloadGameArchUseCase
 import com.pixnpunk.stock.domain.usecase.FetchLocalSourceUseCase
 import com.pixnpunk.stock.domain.usecase.FetchRemoteDescUseCase
 import com.pixnpunk.stock.domain.usecase.FetchRemoteSourceUseCase
@@ -14,4 +15,5 @@ val domainModule = module {
     singleOf(::FetchRemoteDescUseCase)
     singleOf(::FetchLocalSourceUseCase)
     singleOf(::DeleteLocalGameEntries)
+    singleOf(::DownloadGameArchUseCase)
 }

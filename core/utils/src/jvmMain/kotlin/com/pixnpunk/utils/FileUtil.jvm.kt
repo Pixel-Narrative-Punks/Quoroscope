@@ -1,5 +1,8 @@
 package com.pixnpunk.utils
 
+import io.ktor.util.cio.*
+import io.ktor.utils.io.*
+import java.io.File
 import java.text.DecimalFormat
 import kotlin.math.log10
 import kotlin.math.pow
@@ -23,5 +26,14 @@ actual object FileUtil {
 
     actual suspend fun createSpecialFiles(path: String) {
         // do nothing
+    }
+
+    actual suspend fun writeFileToDir(
+        fileChannel: ByteReadChannel,
+        fileName: String,
+        destDirPath: String
+    ) {
+        val destFile = File(destDirPath, fileName)
+        fileChannel.copyAndClose(destFile.writeChannel())
     }
 }

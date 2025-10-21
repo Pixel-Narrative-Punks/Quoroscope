@@ -4,12 +4,21 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import com.pixnpunk.addons.pluginsModule
 import com.pixnpunk.database.di.databaseModule
 import com.pixnpunk.network.networkModule
-import com.pixnpunk.addons.pluginsModule
 import com.pixnpunk.stock.presentation.di.featureStockModules
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
+import io.github.vinceglb.filekit.path
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import javax.swing.SwingUtilities
+
+private val scope = CoroutineScope(Dispatchers.Default)
+private lateinit var root: RealRootComponent
 
 fun main() {
     startKoin {
@@ -17,11 +26,19 @@ fun main() {
         modules(featureStockModules)
     }
 
-    val root = runOnUiThread {
+    FileKit.init(appId = "Quoroscope")
+
+    root = runOnUiThread {
         RealRootComponent(
             componentContext = DefaultComponentContext(LifecycleRegistry()),
             launchDirPicker = {
-//            dirPickerLauncher.launch(null)
+                scope.launch {
+                    val directory = FileKit.openDirectoryPicker()
+                    val filePath = directory?.path
+                    if (filePath != null) {
+                        root.showAddNewGameDialog("", filePath)
+                    }
+                }
             },
             launchEngineIntent = {
 

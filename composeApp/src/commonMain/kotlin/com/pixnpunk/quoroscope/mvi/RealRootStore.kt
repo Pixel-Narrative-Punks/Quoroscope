@@ -13,6 +13,6 @@ class RealRootStore(
         Store<RootStore.Intent, RootStore.State, RootStore.Label> by storeFactory.create(
             name = "RootStore",
             initialState = RootStore.State,
-            executorFactory = { RootExecutor(getKoin().get()) }
+            executorFactory = { RootExecutor(getKoin().get(), getKoin().get()) }
         )
 }

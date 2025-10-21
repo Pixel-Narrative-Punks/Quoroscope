@@ -6,6 +6,9 @@ import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
 import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.isWritable
 import com.anggrayudi.storage.file.makeFile
+import com.anggrayudi.storage.file.openOutputStream
+import io.ktor.utils.io.*
+import io.ktor.utils.io.jvm.javaio.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import java.text.DecimalFormat
@@ -63,5 +66,22 @@ actual object FileUtil : KoinComponent {
 
         gameDir.makeFile(get(), NOMEDIA_FILENAME, MimeType.TEXT, CreateMode.SKIP_IF_EXISTS)
         gameDir.makeFile(get(), NOSEARCH_FILENAME, MimeType.TEXT, CreateMode.SKIP_IF_EXISTS)
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    actual suspend fun writeFileToDir(
+        fileChannel: ByteReadChannel,
+        fileName: String,
+        destDirPath: String
+    ) {
+        val gameDir = fromFullPath(
+            context = get(),
+            fullPath = destDirPath,
+            requiresWriteAccess = true
+        )
+        if (!gameDir.isWritableDir()) return
+        val destFile = gameDir.makeFile(get(), fileName, mode = CreateMode.SKIP_IF_EXISTS)
+        if (!destFile.isWritableFile()) return
+        fileChannel.copyTo(destFile.openOutputStream(get())!!)
     }
 }

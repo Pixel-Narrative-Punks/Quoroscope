@@ -4,11 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,7 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.dialogs.presentation.DialogsComponent
-import kotlinx.io.files.Path
 
 @Composable
 fun DialogDownloadGameContent(
@@ -30,7 +26,6 @@ fun DialogDownloadGameContent(
     var gameName by rememberSaveable { mutableStateOf(entry.title) }
     var gameAuthor by rememberSaveable { mutableStateOf(entry.author) }
     var gameVersion by rememberSaveable { mutableStateOf(entry.version) }
-    val gameDirPath by rememberSaveable { mutableStateOf(entry.gameDirPath) }
 
     val isButtonEnabled = gameName.isNotBlank()
 
@@ -59,22 +54,16 @@ fun DialogDownloadGameContent(
             singleLine = true,
             label = { Text("Game version") }
         )
-        OutlinedTextField(
+        OutlinedButton(
             modifier = Modifier.fillMaxWidth(),
-            value = Path(gameDirPath).name,
-            onValueChange = { },
-            singleLine = true,
-            readOnly = true,
-            trailingIcon = {
-                IconButton(onClick = component.selectFolder) {
-                    Icon(
-                        imageVector = Icons.Default.Folder,
-                        contentDescription = "Select folder"
-                    )
-                }
-            },
-            label = { Text("Path where the game will be downloaded") }
-        )
+            onClick = component.selectFolder
+        ) {
+            if (entry.gameDirPath.isNotEmpty()) {
+                Text("Folder selected")
+            } else {
+                Text("Select folder where game stored")
+            }
+        }
         FilledTonalButton(
             modifier = Modifier.fillMaxWidth(),
             onClick = {

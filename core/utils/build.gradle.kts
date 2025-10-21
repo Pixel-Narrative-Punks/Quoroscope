@@ -41,9 +41,9 @@ kotlin {
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
 
-            implementation(libs.preference)
+            implementation(libs.ktor.client.core)
 
-            implementation("com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.03")
+            implementation(libs.preference)
         }
         jvmMain.dependencies {
             implementation(libs.kotlinx.coroutines.swing)

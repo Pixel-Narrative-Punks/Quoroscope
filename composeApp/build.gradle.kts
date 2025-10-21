@@ -70,6 +70,9 @@ kotlin {
             implementation(libs.mvikotlin.core)
             implementation(libs.mvikotlin.main)
             implementation(libs.mvikotlin.coro.ext)
+
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.dialogs)
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)

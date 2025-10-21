@@ -11,10 +11,6 @@ internal fun createKtorClient(): HttpClient = HttpClient {
         requestTimeoutMillis = 15_000
     }
     install(ContentNegotiation) {
-        xml(
-            format = XML {
-
-            }
-        )
+        xml(format = XML {})
     }
 }

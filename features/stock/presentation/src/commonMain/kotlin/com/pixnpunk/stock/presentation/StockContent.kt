@@ -3,8 +3,6 @@ package com.pixnpunk.stock.presentation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -14,11 +12,9 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationRailDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass.Companion.Compact
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -29,20 +25,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.pixnpunk.addons.presentation.AddonsContent
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.news.presentation.NewsContent
 import com.pixnpunk.stock.presentation.content.StockDefaultBottomBar
-import com.pixnpunk.stock.presentation.content.StockDefaultRail
 import com.pixnpunk.stock.presentation.content.StockDeleteAppBar
 import com.pixnpunk.stock.presentation.content.StockFloatButton
 import com.pixnpunk.stock.presentation.content.StockInstalledChild
 import com.pixnpunk.stock.presentation.content.StockLibraryChild
 import com.pixnpunk.stock.presentation.content.StockSearchAppBar
-import com.pixnpunk.utils.ViewUtil.calcWindowSizeClass
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,8 +65,6 @@ fun StockContent(
         is StockComponent.Child.InstalledChild, is StockComponent.Child.LibraryChild -> true
         else -> false
     }
-
-    val isUseRail = calcWindowSizeClass().widthSizeClass > Compact
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -129,38 +120,34 @@ fun StockContent(
         },
         bottomBar = {
             if (!model.isDeleteModeActive) {
-                if (isUseRail) {
-                    StockDefaultRail(component, activeComponent, isStockChildren)
-                } else {
-                    StockDefaultBottomBar(
-                        component,
-                        activeComponent,
-                        isStockChildren,
-                        scrollBehavior
-                    )
-                }
+                StockDefaultBottomBar(
+                    component,
+                    activeComponent,
+                    isStockChildren,
+                    scrollBehavior
+                )
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
-        Box(
-            modifier = Modifier.consumeWindowInsets(
-                if (isUseRail) NavigationRailDefaults.windowInsets
-                else BottomAppBarDefaults.windowInsets
-            )
-        ) {
-            Children(
-                modifier = Modifier.padding(paddingValues),
-                stack = stack
-            ) { child ->
-                when (val instance = child.instance) {
-                    is StockComponent.Child.AddonsChild -> AddonsContent(instance.component)
-                    is StockComponent.Child.NewsChild -> NewsContent(instance.component)
-                    is StockComponent.Child.InstalledChild -> {
-                        StockInstalledChild(component, listState, setToDelete, setAllEntries, model.isDeleteModeActive)
-                    }
-                    is StockComponent.Child.LibraryChild -> StockLibraryChild(component, gridState)
+        Children(
+            modifier = Modifier.padding(paddingValues),
+            stack = stack
+        ) { child ->
+            when (val instance = child.instance) {
+                is StockComponent.Child.AddonsChild -> AddonsContent(instance.component)
+                is StockComponent.Child.NewsChild -> NewsContent(instance.component)
+                is StockComponent.Child.InstalledChild -> {
+                    StockInstalledChild(
+                        component,
+                        listState,
+                        setToDelete,
+                        setAllEntries,
+                        model.isDeleteModeActive
+                    )
                 }
+
+                is StockComponent.Child.LibraryChild -> StockLibraryChild(component, gridState)
             }
         }
     }

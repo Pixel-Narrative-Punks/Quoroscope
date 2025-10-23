@@ -1,7 +1,10 @@
 package com.pixnpunk.quoroscope
 
+import androidx.compose.foundation.background
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.experimental.panels.ChildPanels
 import com.arkivanov.decompose.extensions.compose.experimental.panels.ChildPanelsAnimators
@@ -30,6 +33,7 @@ fun RootContent(
         ChildPanelsModeChangedEffect(component::setMode)
 
         ChildPanels(
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface),
             panels = component.childPanel,
             mainChild = { StockContent(it.instance) },
             detailsChild = { DetailsContent(it.instance) },

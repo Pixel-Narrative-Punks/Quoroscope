@@ -147,6 +147,13 @@ class RealRootComponent(
             extraFactory = { _, ctx ->
                 RealSettingsComponent(
                     componentContext = ctx,
+                    showColorDialog = {
+                        dialogsNavigation.activate(
+                            DialogsConfig(
+                                dialogsState = DialogsState.DIALOG_SELECT_COLOR
+                            )
+                        )
+                    },
                     onDismissed = panelNavigation::dismissExtra
                 )
             },

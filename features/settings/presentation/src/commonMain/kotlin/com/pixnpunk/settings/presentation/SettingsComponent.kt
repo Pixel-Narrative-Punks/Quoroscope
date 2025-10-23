@@ -7,6 +7,8 @@ sealed interface SettingsComponent {
     val childStack: Value<ChildStack<*, Child>>
     val onDismissed: () -> Unit
 
+    val showColorDialog: () -> Unit
+
     fun moveToChild(config: RealSettingsComponent.ChildConfig)
     fun backToRoot()
 

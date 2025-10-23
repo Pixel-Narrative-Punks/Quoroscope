@@ -1,9 +1,14 @@
 package com.pixnpunk.settings.presentation
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.pixnpunk.settings.presentation.contents.SettingsAudioContent
@@ -15,11 +20,14 @@ import com.pixnpunk.utils.SettingsUtil
 import me.zhanghai.compose.preference.LocalPreferenceFlow
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsContent(
     component: SettingsComponent
 ) {
     val stack by component.childStack.subscribeAsState()
+    val activeComponent = stack.active.instance
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     ProvidePreferenceLocals {
         val flow = LocalPreferenceFlow.current
@@ -29,36 +37,40 @@ fun SettingsContent(
         }
 
         Scaffold(
-            topBar = { SettingsAppBar(component) }
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            topBar = {
+                SettingsAppBar(
+                    activeComponent = activeComponent,
+                    scrollBehavior = scrollBehavior,
+                    onClickBack = {
+                        if (activeComponent is SettingsComponent.Child.RootChild) {
+                            component.onDismissed()
+                        } else {
+                            component.backToRoot()
+                        }
+                    }
+                )
+            }
         ) { paddingValues ->
             Children(
+                modifier = Modifier.padding(paddingValues),
                 stack = stack
             ) { child ->
                 when (child.instance) {
-                    is SettingsComponent.Child.AudioChild -> SettingsAudioContent(
-                        component,
-                        paddingValues
-                    )
+                    is SettingsComponent.Child.AudioChild ->
+                        SettingsAudioContent()
 
-                    is SettingsComponent.Child.GeneralChild -> SettingsGeneralContent(
-                        component,
-                        paddingValues
-                    )
+                    is SettingsComponent.Child.GeneralChild ->
+                        SettingsGeneralContent()
 
-                    is SettingsComponent.Child.PicturesChild -> SettingsImageContent(
-                        component,
-                        paddingValues
-                    )
+                    is SettingsComponent.Child.PicturesChild ->
+                        SettingsImageContent()
 
-                    is SettingsComponent.Child.TextChild -> SettingsTextContent(
-                        component,
-                        paddingValues
-                    )
+                    is SettingsComponent.Child.TextChild ->
+                        SettingsTextContent(showColorDialog = component.showColorDialog)
 
-                    is SettingsComponent.Child.RootChild -> SettingsRootContent(
-                        component,
-                        paddingValues
-                    )
+                    is SettingsComponent.Child.RootChild ->
+                        SettingsRootContent(moveToChild = { component.moveToChild(it) })
                 }
             }
         }

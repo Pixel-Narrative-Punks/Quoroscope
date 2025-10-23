@@ -1,29 +1,33 @@
 package com.pixnpunk.settings.presentation.contents
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Scaffold
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.Height
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import com.pixnpunk.dto.NativeLibAuthors
-import com.pixnpunk.settings.presentation.SettingsAppBar
-import com.pixnpunk.settings.presentation.SettingsComponent
 import me.zhanghai.compose.preference.listPreference
 import me.zhanghai.compose.preference.switchPreference
 
 @Composable
 fun SettingsGeneralContent(
-    component: SettingsComponent,
-    paddingValues: PaddingValues
 ) {
-    LazyColumn(
-        modifier = Modifier.padding(paddingValues)
-    ) {
+    LazyColumn {
         listPreference(
             key = "appThemePref",
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.DarkMode,
+                    contentDescription = null
+                )
+            },
             defaultValue = "auto",
             values = listOf("auto", "light", "dark"),
             valueToText = {
@@ -37,6 +41,12 @@ fun SettingsGeneralContent(
         )
         listPreference(
             key = "appLangPref",
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Language,
+                    contentDescription = null
+                )
+            },
             defaultValue = "en",
             values = listOf("en", "ru"),
             valueToText = {
@@ -52,6 +62,12 @@ fun SettingsGeneralContent(
         )
         listPreference(
             key = "appLibVerPref",
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Book,
+                    contentDescription = null
+                )
+            },
             defaultValue = NativeLibAuthors.SEEDHARTHA.toString(),
             values = NativeLibAuthors.entries.map { it.toString() },
             valueToText = {
@@ -67,6 +83,12 @@ fun SettingsGeneralContent(
         )
         listPreference(
             key = "appBinPref",
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Code,
+                    contentDescription = null
+                )
+            },
             defaultValue = 1000,
             values = listOf(1000, 1024),
             valueToText = {
@@ -82,12 +104,24 @@ fun SettingsGeneralContent(
         )
         listPreference(
             key = "countActsPref",
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Height,
+                    contentDescription = null
+                )
+            },
             defaultValue = 3,
             values = listOf(3, 4, 5, 6),
             title = { Text("Count visible action") }
         )
         switchPreference(
             key = "appImmersiveModePref",
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Fullscreen,
+                    contentDescription = null
+                )
+            },
             defaultValue = true,
             title = { Text("Immersive mode") }
         )

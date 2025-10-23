@@ -10,6 +10,7 @@ import com.pixnpunk.dialogs.presentation.content.DialogAddGameContent
 import com.pixnpunk.dialogs.presentation.content.DialogDownloadGameContent
 import com.pixnpunk.dialogs.presentation.content.DialogEditGameContent
 import com.pixnpunk.dialogs.presentation.content.DialogErrorContent
+import com.pixnpunk.dialogs.presentation.content.DialogSelectColorContent
 import com.pixnpunk.dialogs.presentation.content.DialogSelectGameContent
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,6 +37,7 @@ fun DialogsMainContent(
                         onDismiss = component.onDismissed
                     )
                 DialogsState.DIALOG_SELECT_RUN_GAME -> DialogSelectGameContent(component)
+                DialogsState.DIALOG_SELECT_COLOR -> DialogSelectColorContent(component)
             }
         }
     }

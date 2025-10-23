@@ -52,6 +52,8 @@ kotlin {
             implementation(libs.mvikotlin.core)
             implementation(libs.mvikotlin.main)
             implementation(libs.mvikotlin.coro.ext)
+
+            implementation("com.github.skydoves:colorpicker-compose:1.1.2")
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)

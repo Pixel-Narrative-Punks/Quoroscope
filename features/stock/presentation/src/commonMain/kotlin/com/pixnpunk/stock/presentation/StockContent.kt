@@ -1,6 +1,8 @@
 package com.pixnpunk.stock.presentation
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.padding
@@ -48,6 +50,7 @@ fun StockContent(
     val model by component.model.collectAsState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+
     val scrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()
 
     val gridState = rememberLazyGridState()
@@ -106,7 +109,18 @@ fun StockContent(
                 StockFloatButton(
                     onClick = {
                         scope.launch {
-                            gridState.animateScrollToItem(0)
+                            launch {
+                                gridState.animateScrollToItem(0)
+                            }
+                            launch {
+                                val currentOffset = scrollBehavior.state.heightOffset
+                                Animatable(currentOffset).animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = tween(durationMillis = 200)
+                                ) {
+                                    scrollBehavior.state.heightOffset = value
+                                }
+                            }
                         }
                     },
                     icon = {

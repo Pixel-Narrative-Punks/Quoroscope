@@ -9,7 +9,9 @@ import com.pixnpunk.database.di.databaseModule
 import com.pixnpunk.network.networkModule
 import com.pixnpunk.stock.presentation.di.featureStockModules
 import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
+import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.nameWithoutExtension
 import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.CoroutineScope
@@ -38,7 +40,16 @@ fun main() {
                     val fileName = directory?.nameWithoutExtension
                     val filePath = directory?.path
                     if (fileName != null && filePath != null) {
-                        root.showAddNewGameDialog(fileName, filePath)
+                        root.processPickedDir(fileName, filePath)
+                    }
+                }
+            },
+            launchFilePicker = {
+                scope.launch {
+                    val file = FileKit.openFilePicker(FileKitType.Image)
+                    val filePath = file?.path
+                    if (filePath != null) {
+                        root.processPickedFile(filePath)
                     }
                 }
             },

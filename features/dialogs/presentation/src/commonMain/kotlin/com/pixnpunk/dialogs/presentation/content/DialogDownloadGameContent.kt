@@ -27,7 +27,7 @@ fun DialogDownloadGameContent(
     var gameAuthor by rememberSaveable { mutableStateOf(entry.author) }
     var gameVersion by rememberSaveable { mutableStateOf(entry.version) }
 
-    val isButtonEnabled = gameName.isNotBlank()
+    val isButtonEnabled = gameName.isNotBlank() && entry.gameDirPath.isNotEmpty()
 
     Column(
         modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
@@ -54,6 +54,16 @@ fun DialogDownloadGameContent(
             singleLine = true,
             label = { Text("Game version") }
         )
+        OutlinedButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = component.selectFile
+        ) {
+            if (entry.gameIconPath.isNotEmpty()) {
+                Text("Icon selected")
+            } else {
+                Text("Select icon for game")
+            }
+        }
         OutlinedButton(
             modifier = Modifier.fillMaxWidth(),
             onClick = component.selectFolder

@@ -45,6 +45,7 @@ import org.koin.core.component.get
 class RealRootComponent(
     private val componentContext: ComponentContext,
     private val launchDirPicker: () -> Unit,
+    private val launchFilePicker: () -> Unit,
     private val launchEngineIntent: (Pair<GameEntry, Int>) -> Unit,
 ) : ComponentContext by componentContext, RootComponent, KoinComponent {
 
@@ -58,13 +59,13 @@ class RealRootComponent(
         RealRootStore(DefaultStoreFactory()).create()
     }
 
-    fun showAddNewGameDialog(dirName: String, rootDirPath: String) {
+    fun processPickedDir(dirName: String, dirPath: String) {
         val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
         if (oldConfig != null && oldConfig.dialogsState == DialogsState.DIALOG_DOWNLOAD_GAME) {
             dialogsNavigation.activate(
                 oldConfig.copy(
                     unfilledEntry = oldConfig.unfilledEntry.copy(
-                        gameDirPath = rootDirPath
+                        gameDirPath = dirPath
                     )
                 )
             )
@@ -74,7 +75,20 @@ class RealRootComponent(
                     dialogsState = DialogsState.DIALOG_ADD_GAME,
                     unfilledEntry = GameEntry(
                         title = dirName,
-                        gameDirPath = rootDirPath,
+                        gameDirPath = dirPath,
+                    )
+                )
+            )
+        }
+    }
+
+    fun processPickedFile(filePath: String) {
+        val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
+        if (oldConfig != null) {
+            dialogsNavigation.activate(
+                oldConfig.copy(
+                    unfilledEntry = oldConfig.unfilledEntry.copy(
+                        gameIconPath = filePath
                     )
                 )
             )
@@ -128,6 +142,7 @@ class RealRootComponent(
                 addNewEntry = { store.accept(RootStore.Intent.AddNewGame(it)) },
                 downloadNewEntry = { store.accept(RootStore.Intent.DownloadNewGame(it)) },
                 selectFolder = launchDirPicker,
+                selectFile = launchFilePicker,
                 selectColor = {
                     store.accept(RootStore.Intent.UpdateSettingsColor(it.first, it.second))
                 },

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,6 +54,16 @@ fun DialogAddGameContent(
             singleLine = true,
             label = { Text("Game version") }
         )
+        OutlinedButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = component.selectFile
+        ) {
+            if (entry.gameIconPath.isNotEmpty()) {
+                Text("Icon selected")
+            } else {
+                Text("Select icon for game")
+            }
+        }
         FilledTonalButton(
             modifier = Modifier.fillMaxWidth(),
             onClick = {

@@ -9,6 +9,7 @@ sealed interface DialogsComponent {
     val addNewEntry: (GameEntry) -> Unit
     val downloadNewEntry: (GameEntry) -> Unit
     val selectFolder: () -> Unit
+    val selectFile: () -> Unit
     val selectColor: (Pair<ColorPickerState, Color>) -> Unit
     val doPlayGame: (GameEntry, Int) -> Unit
     val onDismissed: () -> Unit

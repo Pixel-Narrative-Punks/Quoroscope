@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.registerForActivityResult
 import androidx.compose.runtime.LaunchedEffect
 import com.anggrayudi.storage.SimpleStorage.Companion.cleanupRedundantUriPermissions
 import com.anggrayudi.storage.SimpleStorage.Companion.hasFullDiskAccess
@@ -15,11 +16,13 @@ import com.anggrayudi.storage.contract.RequestStorageAccessContract
 import com.anggrayudi.storage.contract.RequestStorageAccessResult
 import com.anggrayudi.storage.extension.startActivitySafely
 import com.anggrayudi.storage.extension.toDocumentFile
+import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.StorageId
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.arkivanov.decompose.defaultComponentContext
 import com.pixnpunk.addons.AddonsUtils
 import com.pixnpunk.utils.FileUtil.isWritableDir
+import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.SettingsUtil
 import org.koin.android.ext.android.get
 import kotlin.concurrent.thread
@@ -50,7 +53,29 @@ class MainActivity : ComponentActivity() {
                     val dirName = newGameDir.name
 
                     if (path.isNotEmpty() && dirName != null) {
-                        root.showAddNewGameDialog(dirName, path)
+                        root.processPickedDir(dirName, path)
+                    }
+                }
+            }
+        }
+    @OptIn(ExperimentalContracts::class)
+    private val filePickerLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) {
+            if (it != null) {
+                val contentResolver = applicationContext.contentResolver
+                contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+
+                thread { cleanupRedundantUriPermissions(applicationContext) }
+
+                var newGameDir = it.toDocumentFile(this)
+                if (newGameDir.isWritableFile()) {
+                    val path = newGameDir.getAbsolutePath(this)
+                    if (path.isNotEmpty()) {
+                        root.processPickedFile(path)
                     }
                 }
             }
@@ -96,6 +121,9 @@ class MainActivity : ComponentActivity() {
             componentContext = defaultComponentContext(),
             launchDirPicker = {
                 dirPickerLauncher.launch(null)
+            },
+            launchFilePicker = {
+                filePickerLauncher.launch(arrayOf(MimeType.IMAGE))
             },
             launchEngineIntent = { (entry, i) ->
                 startActivitySafely(addonsRepository.createEngineIntent(entry, i))

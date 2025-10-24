@@ -31,6 +31,14 @@ class RootExecutor(
                 }
             }
 
+            is RootStore.Intent.UpdateSettingsColor -> {
+                scope.launch {
+                    SettingsUtil.emitColorValue(
+                        intent.state, intent.color
+                    )
+                }
+            }
+
             is RootStore.Intent.StartSenderGameSetting -> {
                 scope.launch {
                     SettingsUtil.settingsFlow.collect {

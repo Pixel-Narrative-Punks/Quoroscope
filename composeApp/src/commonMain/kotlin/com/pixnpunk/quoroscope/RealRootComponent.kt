@@ -128,6 +128,9 @@ class RealRootComponent(
                 addNewEntry = { store.accept(RootStore.Intent.AddNewGame(it)) },
                 downloadNewEntry = { store.accept(RootStore.Intent.DownloadNewGame(it)) },
                 selectFolder = launchDirPicker,
+                selectColor = {
+                    store.accept(RootStore.Intent.UpdateSettingsColor(it.first, it.second))
+                },
                 doPlayGame = { entry, value -> launchEngineIntent(entry to value) },
                 onDismissed = dialogsNavigation::dismiss
             )
@@ -150,7 +153,8 @@ class RealRootComponent(
                     showColorDialog = {
                         dialogsNavigation.activate(
                             DialogsConfig(
-                                dialogsState = DialogsState.DIALOG_SELECT_COLOR
+                                dialogsState = DialogsState.DIALOG_SELECT_COLOR,
+                                colorPickerState = it
                             )
                         )
                     },

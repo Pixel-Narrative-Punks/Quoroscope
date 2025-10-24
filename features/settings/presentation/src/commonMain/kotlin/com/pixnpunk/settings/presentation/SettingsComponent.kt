@@ -2,12 +2,13 @@ package com.pixnpunk.settings.presentation
 
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.value.Value
+import com.pixnpunk.dto.ColorPickerState
 
 sealed interface SettingsComponent {
     val childStack: Value<ChildStack<*, Child>>
     val onDismissed: () -> Unit
 
-    val showColorDialog: () -> Unit
+    val showColorDialog: (ColorPickerState) -> Unit
 
     fun moveToChild(config: RealSettingsComponent.ChildConfig)
     fun backToRoot()

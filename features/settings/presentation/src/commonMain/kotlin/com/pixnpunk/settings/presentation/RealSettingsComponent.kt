@@ -7,12 +7,13 @@ import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.decompose.value.Value
+import com.pixnpunk.dto.ColorPickerState
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
 
 class RealSettingsComponent(
     private val componentContext: ComponentContext,
-    override val showColorDialog: () -> Unit,
+    override val showColorDialog: (ColorPickerState) -> Unit,
     override val onDismissed: () -> Unit
 ) : ComponentContext by componentContext, SettingsComponent, KoinComponent {
 

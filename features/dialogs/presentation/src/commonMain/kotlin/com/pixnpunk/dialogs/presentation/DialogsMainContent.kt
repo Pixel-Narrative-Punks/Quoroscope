@@ -6,12 +6,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import com.pixnpunk.dialogs.presentation.content.DialogAddGameContent
 import com.pixnpunk.dialogs.presentation.content.DialogDownloadGameContent
 import com.pixnpunk.dialogs.presentation.content.DialogEditGameContent
 import com.pixnpunk.dialogs.presentation.content.DialogErrorContent
 import com.pixnpunk.dialogs.presentation.content.DialogSelectColorContent
 import com.pixnpunk.dialogs.presentation.content.DialogSelectGameContent
+import com.pixnpunk.dto.ColorPickerState
+import com.pixnpunk.utils.SettingsUtil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +40,23 @@ fun DialogsMainContent(
                         onDismiss = component.onDismissed
                     )
                 DialogsState.DIALOG_SELECT_RUN_GAME -> DialogSelectGameContent(component)
-                DialogsState.DIALOG_SELECT_COLOR -> DialogSelectColorContent(component)
+                DialogsState.DIALOG_SELECT_COLOR -> {
+                    val state = component.dialogsConfig.colorPickerState
+                    if (state != null) {
+                        val settings = SettingsUtil.settingsFlow.value
+                        DialogSelectColorContent(
+                            selectColor = { component.selectColor(Pair(state, it)) },
+                            initialColor = Color(
+                                when (state) {
+                                    ColorPickerState.COLOR_TEXT -> settings.textColor
+                                    ColorPickerState.COLOR_BACK -> settings.backColor
+                                    ColorPickerState.COLOR_LINK -> settings.linkColor
+                                }
+                            ),
+                            onDismiss = component.onDismissed
+                        )
+                    }
+                }
             }
         }
     }

@@ -11,14 +11,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.AnnotatedString
+import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.FontTypeface
 import me.zhanghai.compose.preference.listPreference
-import me.zhanghai.compose.preference.preference
 import me.zhanghai.compose.preference.switchPreference
+import me.zhanghai.compose.preference.twoTargetSwitchPreference
 
 @Composable
 fun SettingsTextContent(
-    showColorDialog: () -> Unit
+    showColorDialog: (ColorPickerState) -> Unit
 ) {
     LazyColumn {
         listPreference(
@@ -55,7 +56,7 @@ fun SettingsTextContent(
             values = listOf(12, 14, 16, 18, 20, 22),
             title = { Text("Font size") }
         )
-        switchPreference(
+        twoTargetSwitchPreference(
             key = "useGameTextColorPref",
             icon = {
                 Icon(
@@ -64,14 +65,11 @@ fun SettingsTextContent(
                 )
             },
             defaultValue = true,
-            title = { Text("Text color from game") }
+            title = { Text("Text color ${if (it) "from game" else "from user"}") },
+            summary = { if (!it) { Text("Specify text color") } },
+            onClick = { if (!it) { showColorDialog(ColorPickerState.COLOR_TEXT) } }
         )
-        preference(
-            key = "useCustomTextColorPref",
-            title = { Text("Specify text color") },
-            onClick = showColorDialog
-        )
-        switchPreference(
+        twoTargetSwitchPreference(
             key = "useGameBackColorPref",
             icon = {
                 Icon(
@@ -80,14 +78,11 @@ fun SettingsTextContent(
                 )
             },
             defaultValue = true,
-            title = { Text("Background color from game") }
+            title = { Text("Background color ${if (it) "from game" else "from user"}") },
+            summary = { if (!it) { Text("Specify background color") } },
+            onClick = { if (!it) { showColorDialog(ColorPickerState.COLOR_BACK) } }
         )
-        preference(
-            key = "useCustomBackColorPref",
-            title = { Text("Specify background color") },
-            onClick = showColorDialog
-        )
-        switchPreference(
+        twoTargetSwitchPreference(
             key = "useGameLinkColorPref",
             icon = {
 //                Icon(
@@ -96,12 +91,9 @@ fun SettingsTextContent(
 //                )
             },
             defaultValue = true,
-            title = { Text("Link color from game") }
-        )
-        preference(
-            key = "useCustomLinkColorPref",
-            title = { Text("Specify link color") },
-            onClick = showColorDialog
+            title = { Text("Link color from ${if (it) "from game" else "from user"}") },
+            summary = { if (!it) { Text("Specify link color") } },
+            onClick = { if (!it) { showColorDialog(ColorPickerState.COLOR_LINK) } }
         )
         switchPreference(
             key = "useGameExecStringPref",

@@ -9,12 +9,16 @@ import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import me.zhanghai.compose.preference.rememberPreferenceState
 import me.zhanghai.compose.preference.switchPreference
 import me.zhanghai.compose.preference.textFieldPreference
 
 @Composable
 fun SettingsImageContent(
 ) {
+    val autoImageWidthPreferenceState = rememberPreferenceState("useAutoImageWidthPref", true)
+    val autoImageHeightPreferenceState = rememberPreferenceState("useAutoImageHeightPref", true)
+
     LazyColumn {
         switchPreference(
             key = "useGameImagesPref",
@@ -35,11 +39,13 @@ fun SettingsImageContent(
 //                    contentDescription = null
 //                )
             },
+            rememberState = { autoImageWidthPreferenceState },
             defaultValue = true,
             title = { Text("Auto game image width") }
         )
         textFieldPreference(
             key = "manualImageWidthPref",
+            enabled = { !autoImageWidthPreferenceState.value },
             defaultValue = "400",
             textToValue = { it.toInt() },
             title = { Text("Manual game image width") }
@@ -52,11 +58,13 @@ fun SettingsImageContent(
                     contentDescription = null
                 )
             },
+            rememberState = { autoImageHeightPreferenceState },
             defaultValue = true,
             title = { Text("Auto game image height") }
         )
         textFieldPreference(
             key = "manualImageHeightPref",
+            enabled = { !autoImageHeightPreferenceState.value },
             defaultValue = "400",
             textToValue = { it.toInt() },
             title = { Text("Manual game image height") }

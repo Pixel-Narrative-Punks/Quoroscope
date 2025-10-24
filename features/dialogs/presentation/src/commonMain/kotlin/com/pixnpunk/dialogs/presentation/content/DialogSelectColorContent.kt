@@ -1,16 +1,16 @@
 package com.pixnpunk.dialogs.presentation.content
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,58 +27,34 @@ import com.github.skydoves.colorpicker.compose.AlphaSlider
 import com.github.skydoves.colorpicker.compose.AlphaTile
 import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
-import com.github.skydoves.colorpicker.compose.drawColorIndicator
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
-import com.pixnpunk.dialogs.presentation.DialogsComponent
 
 @Composable
 fun DialogSelectColorContent(
-    component: DialogsComponent
+    selectColor: (Color) -> Unit,
+    initialColor: Color,
+    onDismiss: () -> Unit
 ) {
     val controller = rememberColorPickerController()
-    var hexCode by remember { mutableStateOf("") }
-    var textColor by remember { mutableStateOf(Color.Transparent) }
 
-    Column {
-        Spacer(modifier = Modifier.weight(1f))
+    var selectedColor by remember { mutableStateOf(initialColor) }
+    var selectedHex by remember { mutableStateOf("") }
 
-        Row(modifier = Modifier.weight(3f)) {
-            listOf(Color.Red, Color.Green, Color.Blue, Color.Yellow, Color.Gray)
-                .forEach { color ->
-                    Surface(
-                        modifier = Modifier
-                            .height(40.dp)
-                            .weight(1f)
-                            .padding(horizontal = 4.dp),
-                        color = color,
-                        shape = RoundedCornerShape(6.dp),
-                        onClick = {
-                            controller.selectByColor(color, true)
-                        },
-                    ) {}
-                }
-        }
-
+    Column(
+        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
         Box(modifier = Modifier.weight(8f)) {
             HsvColorPicker(
-                modifier = Modifier
-                    .padding(10.dp),
+                modifier = Modifier.padding(10.dp),
                 controller = controller,
-                drawOnPosSelected = {
-                    drawColorIndicator(
-                        controller.selectedPoint.value,
-                        controller.selectedColor.value,
-                    )
-                },
                 onColorChanged = { colorEnvelope ->
-                    hexCode = colorEnvelope.hexCode
-                    textColor = colorEnvelope.color
+                    selectedHex = colorEnvelope.hexCode
+                    selectedColor = colorEnvelope.color
                 },
-                initialColor = Color.Red,
+                initialColor = initialColor,
             )
         }
-
-        Spacer(modifier = Modifier.weight(1f))
 
         AlphaSlider(
             modifier = Modifier
@@ -87,6 +63,7 @@ fun DialogSelectColorContent(
                 .height(35.dp)
                 .align(Alignment.CenterHorizontally),
             controller = controller,
+            initialColor = initialColor
         )
 
         BrightnessSlider(
@@ -96,15 +73,16 @@ fun DialogSelectColorContent(
                 .height(35.dp)
                 .align(Alignment.CenterHorizontally),
             controller = controller,
+            initialColor = initialColor
         )
 
         Text(
-            text = "#$hexCode",
-            color = textColor,
+            text = "#$selectedHex",
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
+
         AlphaTile(
             modifier = Modifier
                 .size(80.dp)
@@ -112,6 +90,26 @@ fun DialogSelectColorContent(
                 .align(Alignment.CenterHorizontally),
             controller = controller,
         )
-        Spacer(modifier = Modifier.weight(1f))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            TextButton(
+                onClick = {
+                    onDismiss()
+                }
+            ) {
+                Text("Cancel")
+            }
+            TextButton(
+                onClick = {
+                    selectColor(selectedColor)
+                    onDismiss()
+                }
+            ) {
+                Text("Select")
+            }
+        }
     }
 }

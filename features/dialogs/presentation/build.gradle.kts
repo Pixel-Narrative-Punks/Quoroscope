@@ -30,6 +30,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(project(":core:dto"))
+            implementation(project(":core:utils"))
 
             implementation(compose.runtime)
             implementation(compose.foundation)

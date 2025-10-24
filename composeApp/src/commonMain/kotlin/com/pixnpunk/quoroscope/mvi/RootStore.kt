@@ -1,6 +1,8 @@
 package com.pixnpunk.quoroscope.mvi
 
+import androidx.compose.ui.graphics.Color
 import com.arkivanov.mvikotlin.core.store.Store
+import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.GameEntry
 import kotlinx.serialization.Serializable
 
@@ -11,6 +13,7 @@ sealed interface RootStore : Store<RootStore.Intent, RootStore.State, RootStore.
     sealed interface Intent {
         data class AddNewGame(val unfilledEntry: GameEntry) : Intent
         data class DownloadNewGame(val entry: GameEntry) : Intent
+        data class UpdateSettingsColor(val state: ColorPickerState, val color: Color) : Intent
         data object StartSenderGameSetting : Intent
     }
 

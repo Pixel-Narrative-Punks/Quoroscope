@@ -1,6 +1,8 @@
 package com.pixnpunk.dialogs.presentation
 
+import androidx.compose.ui.graphics.Color
 import com.arkivanov.decompose.ComponentContext
+import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.GameEntry
 
 class RealDialogsComponent(
@@ -9,6 +11,7 @@ class RealDialogsComponent(
     override val addNewEntry: (GameEntry) -> Unit,
     override val downloadNewEntry: (GameEntry) -> Unit,
     override val selectFolder: () -> Unit,
+    override val selectColor: (Pair<ColorPickerState, Color>) -> Unit,
     override val doPlayGame: (GameEntry, Int) -> Unit,
     override val onDismissed: () -> Unit
 ) : ComponentContext by componentContext, DialogsComponent

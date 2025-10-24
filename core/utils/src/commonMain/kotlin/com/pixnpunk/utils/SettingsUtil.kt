@@ -1,5 +1,8 @@
 package com.pixnpunk.utils
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.FontTypeface
 import com.pixnpunk.dto.GameSettings
 import com.pixnpunk.dto.NativeLibAuthors
@@ -10,6 +13,16 @@ import me.zhanghai.compose.preference.Preferences
 object SettingsUtil {
     private val _settingsFlow: MutableStateFlow<GameSettings> = MutableStateFlow(GameSettings())
     val settingsFlow: StateFlow<GameSettings> = _settingsFlow
+
+    suspend fun emitColorValue(state: ColorPickerState, color: Color) {
+        _settingsFlow.emit(
+            when (state) {
+                ColorPickerState.COLOR_TEXT -> GameSettings(textColor = color.toArgb())
+                ColorPickerState.COLOR_BACK -> GameSettings(backColor = color.toArgb())
+                ColorPickerState.COLOR_LINK -> GameSettings(linkColor = color.toArgb())
+            }
+        )
+    }
 
     suspend fun emitValue(preferences: Preferences) {
         val setMap = preferences.asMap()

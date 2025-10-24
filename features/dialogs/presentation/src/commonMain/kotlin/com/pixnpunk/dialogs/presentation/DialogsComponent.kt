@@ -7,6 +7,7 @@ import com.pixnpunk.dto.GameEntry
 sealed interface DialogsComponent {
     val dialogsConfig: DialogsConfig
     val addNewEntry: (GameEntry) -> Unit
+    val editEntry: (GameEntry) -> Unit
     val downloadNewEntry: (GameEntry) -> Unit
     val selectFolder: () -> Unit
     val selectFile: () -> Unit

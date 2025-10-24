@@ -140,6 +140,7 @@ class RealRootComponent(
                 componentContext = ctx,
                 dialogsConfig = config,
                 addNewEntry = { store.accept(RootStore.Intent.AddNewGame(it)) },
+                editEntry = { store.accept(RootStore.Intent.EditGame(it)) },
                 downloadNewEntry = { store.accept(RootStore.Intent.DownloadNewGame(it)) },
                 selectFolder = launchDirPicker,
                 selectFile = launchFilePicker,
@@ -193,7 +194,14 @@ class RealRootComponent(
                     componentContext = ctx,
                     entryShow = cfg.entryShow,
                     showSelectGameDialog = { selGameDialog(it) },
-                    showEditGameDialog = { },
+                    showEditGameDialog = {
+                        dialogsNavigation.activate(
+                            DialogsConfig(
+                                dialogsState = DialogsState.DIALOG_EDIT_GAME,
+                                unfilledEntry = it
+                            )
+                        )
+                    },
                     showDownloadGameDialog = {
                         dialogsNavigation.activate(
                             DialogsConfig(

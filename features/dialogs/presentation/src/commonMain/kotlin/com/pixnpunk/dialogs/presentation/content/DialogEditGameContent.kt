@@ -67,11 +67,18 @@ fun DialogEditGameContent(
         FilledTonalButton(
             modifier = Modifier.fillMaxWidth(),
             onClick = {
+                component.editEntry(
+                    entry.copy(
+                        title = gameName,
+                        author = gameAuthor,
+                        version = gameVersion
+                    )
+                )
                 component.onDismissed()
             },
             enabled = isButtonEnabled
         ) {
-            Text("Add a new game entry")
+            Text("Edit a game entry")
         }
     }
 }

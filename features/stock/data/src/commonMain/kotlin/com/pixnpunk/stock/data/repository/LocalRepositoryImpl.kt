@@ -22,14 +22,6 @@ class LocalRepositoryImpl : LocalRepository, KoinComponent {
 
     private val gameDao: GameDao by inject()
 
-    private fun createNoMediaFile(gameDirPath: String) {
-//        forceCreateFile(context, gameDir, LocalRepositoryImpl.NOMEDIA_FILENAME, TEXT)
-    }
-
-    private fun createNoSearchFile(gameDirPath: String) {
-//        forceCreateFile(context, gameDir, LocalRepositoryImpl.NOSEARCH_FILENAME, TEXT)
-    }
-
     override suspend fun deleteGameEntries(entriesDelete: Set<GameEntry>): Int {
         return gameDao.deleteAll(entriesDelete.map { entry -> entry.toEntity() })
     }
@@ -47,10 +39,6 @@ class LocalRepositoryImpl : LocalRepository, KoinComponent {
             ),
             pagingSourceFactory = { gameDao.getAllPaged() }
         ).flow.map { data -> data.map { entry -> entry.toDomain() } }
-
-//    override suspend fun getAllSortGameEntries(method: LocalRepository.SortedMethod): List<GameEntry> {
-//        return gameDao.getAllSortedByName(method.ordinal).map { entry -> entry.toDomain() }
-//    }
 
     override suspend fun updateEntry(entry: GameEntry) {
         val nullEntry = gameDao.getById(entry.id)
@@ -72,11 +60,11 @@ class LocalRepositoryImpl : LocalRepository, KoinComponent {
         gameDao.insert(newEntry.toEntity())
     }
 
-    override suspend fun fillAndInsertEntry(unfilledEntry: GameEntry) {
-        val gameDirPath = unfilledEntry.gameDirPath
+    override suspend fun fillAndInsertEntry(entry: GameEntry) {
+        val gameDirPath = entry.gameDirPath
         createSpecialFiles(gameDirPath)
         insertDefaultEntry(
-            unfilledEntry.copy(
+            entry.copy(
                 listId = GameListType.Playable,
                 gameFilesPath = receiveGameFilesFromDir(gameDirPath),
                 fileSize = tryReceiveDirSize(gameDirPath)

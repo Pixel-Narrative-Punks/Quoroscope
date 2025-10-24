@@ -9,6 +9,7 @@ class RealDialogsComponent(
     private val componentContext: ComponentContext,
     override val dialogsConfig: DialogsConfig,
     override val addNewEntry: (GameEntry) -> Unit,
+    override val editEntry: (GameEntry) -> Unit,
     override val downloadNewEntry: (GameEntry) -> Unit,
     override val selectFolder: () -> Unit,
     override val selectFile: () -> Unit,

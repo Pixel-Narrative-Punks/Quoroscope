@@ -4,6 +4,7 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.addons.AddonsUtils
 import com.pixnpunk.stock.domain.usecase.DownloadGameArchUseCase
 import com.pixnpunk.stock.domain.usecase.FillAndInsertEntryUseCase
+import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase
 import com.pixnpunk.utils.SettingsUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -12,6 +13,7 @@ import kotlinx.coroutines.launch
 
 class RootExecutor(
     private val fillAndInsertEntryUseCase: FillAndInsertEntryUseCase,
+    private val upsertEntryUseCase: UpsertEntryUseCase,
     private val downloadGameArchUseCase: DownloadGameArchUseCase
 ) : CoroutineExecutor<RootStore.Intent, RootStore.Action, RootStore.State, RootStore.Message, RootStore.Label>() {
     private val outScope = CoroutineScope(Dispatchers.Default)
@@ -19,7 +21,11 @@ class RootExecutor(
     override fun executeIntent(intent: RootStore.Intent) {
         when (intent) {
             is RootStore.Intent.AddNewGame -> {
-                outScope.launch { fillAndInsertEntryUseCase.execute(intent.unfilledEntry) }
+                outScope.launch { fillAndInsertEntryUseCase.execute(intent.entry) }
+            }
+
+            is RootStore.Intent.EditGame -> {
+                outScope.launch { upsertEntryUseCase.execute(intent.entry) }
             }
 
             is RootStore.Intent.DownloadNewGame -> {

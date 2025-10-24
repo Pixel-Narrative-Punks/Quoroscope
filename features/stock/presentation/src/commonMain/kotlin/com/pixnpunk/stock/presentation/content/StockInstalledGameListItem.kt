@@ -44,7 +44,13 @@ fun StockInstalledGameListItem(
                 onLongClick = onLongClick
             ),
         headlineContent = { Text(gameEntry.title) },
-        supportingContent = { Text(formatFileSize(gameEntry.fileSize, 1024)) },
+        supportingContent = {
+            if (gameEntry.fileSize != 0L) {
+                Text(formatFileSize(gameEntry.fileSize, 1024))
+            } else {
+                null
+            }
+        },
         leadingContent = {
             AsyncImage(
                 modifier = Modifier.size(50.dp),

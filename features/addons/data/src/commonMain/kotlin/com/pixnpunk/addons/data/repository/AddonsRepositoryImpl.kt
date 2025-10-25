@@ -1,17 +1,12 @@
 package com.pixnpunk.addons.data.repository
 
-import com.pixnpunk.addons.AddonsUtils
 import com.pixnpunk.addons.domain.model.AddonData
 import com.pixnpunk.addons.domain.repository.AddonsRepository
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
+import com.pixnpunk.utils.AddonsUtils
 
-class AddonsRepositoryImpl : AddonsRepository, KoinComponent {
-
-    private val addonsUtils: AddonsUtils = get()
-
+class AddonsRepositoryImpl : AddonsRepository {
     override suspend fun getAllAddons(): List<AddonData> {
-        return if (addonsUtils.receiveEngineAddons()) {
+        return if (AddonsUtils.receiveEngineAddons()) {
             listOf(
                 AddonData(
                     title = "QSPlugin",

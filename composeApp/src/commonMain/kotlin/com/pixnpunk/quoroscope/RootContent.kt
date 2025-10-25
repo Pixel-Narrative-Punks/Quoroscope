@@ -1,8 +1,10 @@
 package com.pixnpunk.quoroscope
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ExperimentalDecomposeApi
@@ -17,17 +19,28 @@ import com.pixnpunk.dialogs.presentation.DialogsMainContent
 import com.pixnpunk.quoroscope.theme.QuoroscopeTheme
 import com.pixnpunk.settings.presentation.SettingsContent
 import com.pixnpunk.stock.presentation.StockContent
+import com.pixnpunk.utils.SettingsRepository
 
 @OptIn(ExperimentalDecomposeApi::class)
 @Composable
 fun RootContent(
-    component: RootComponent
+    component: RootComponent,
+    settingsRepository: SettingsRepository
 ) {
     val dialogSlot by component.dialogSlot.subscribeAsState()
+    val settings by settingsRepository.settingsFlow.collectAsState()
 
-    QuoroscopeTheme {
+    QuoroscopeTheme(
+        darkTheme =
+            when {
+                settings.theme.contains("auto") -> isSystemInDarkTheme()
+                settings.theme.contains("dark") -> true
+                settings.theme.contains("light") -> false
+                else -> false
+            }
+    ) {
         dialogSlot.child?.instance?.also {
-            DialogsMainContent(it)
+            DialogsMainContent(it, settingsRepository)
         }
 
         ChildPanelsModeChangedEffect(component::setMode)

@@ -6,10 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.registerForActivityResult
-import androidx.compose.runtime.LaunchedEffect
 import com.anggrayudi.storage.SimpleStorage.Companion.cleanupRedundantUriPermissions
 import com.anggrayudi.storage.SimpleStorage.Companion.hasFullDiskAccess
 import com.anggrayudi.storage.contract.RequestStorageAccessContract
@@ -20,17 +17,17 @@ import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.StorageId
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.arkivanov.decompose.defaultComponentContext
-import com.pixnpunk.addons.AddonsUtils
+import com.pixnpunk.utils.AddonsUtils
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
-import com.pixnpunk.utils.SettingsUtil
+import com.pixnpunk.utils.SettingsRepository
 import org.koin.android.ext.android.get
 import kotlin.concurrent.thread
 import kotlin.contracts.ExperimentalContracts
 
 class MainActivity : ComponentActivity() {
 
-    private val addonsRepository: AddonsUtils = get()
+    private val settingsRepository: SettingsRepository = get()
 
     private lateinit var root: RealRootComponent
 
@@ -58,6 +55,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
     @OptIn(ExperimentalContracts::class)
     private val filePickerLauncher =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) {
@@ -80,36 +78,35 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    private lateinit var storageAccessLauncher: ActivityResultLauncher<RequestStorageAccessContract.Options>
+
+    private val storageAccessLauncher =
+        registerForActivityResult(RequestStorageAccessContract(this)) { result ->
+            when (result) {
+                is RequestStorageAccessResult.CanceledByUser -> {
+
+                }
+
+                is RequestStorageAccessResult.ExpectedStorageNotSelected -> {
+
+                }
+
+                is RequestStorageAccessResult.RootPathNotSelected -> {
+
+                }
+
+                is RequestStorageAccessResult.RootPathPermissionGranted -> {
+
+                }
+
+                is RequestStorageAccessResult.StoragePermissionDenied -> {
+
+                }
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-
-        storageAccessLauncher =
-            registerForActivityResult(RequestStorageAccessContract(this)) { result ->
-                when (result) {
-                    is RequestStorageAccessResult.CanceledByUser -> {
-
-                    }
-
-                    is RequestStorageAccessResult.ExpectedStorageNotSelected -> {
-
-                    }
-
-                    is RequestStorageAccessResult.RootPathNotSelected -> {
-
-                    }
-
-                    is RequestStorageAccessResult.RootPathPermissionGranted -> {
-
-                    }
-
-                    is RequestStorageAccessResult.StoragePermissionDenied -> {
-
-                    }
-                }
-            }
 
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
             if (!hasFullDiskAccess(this, StorageId.PRIMARY)) {
@@ -126,17 +123,16 @@ class MainActivity : ComponentActivity() {
                 filePickerLauncher.launch(arrayOf(MimeType.IMAGE))
             },
             launchEngineIntent = { (entry, i) ->
-                startActivitySafely(addonsRepository.createEngineIntent(entry, i))
+                startActivitySafely(
+                    AddonsUtils.createEngineIntent(
+                        entry = entry,
+                        fileSelIndex = i,
+                        gameSettings = settingsRepository.settingsFlow.value
+                    )
+                )
             }
         )
 
-        setContent {
-            LaunchedEffect(Unit) {
-                SettingsUtil.settingsFlow.collect {
-                    addonsRepository.publishAppSettings(it)
-                }
-            }
-            RootContent(root)
-        }
+        setContent { RootContent(root, settingsRepository) }
     }
 }

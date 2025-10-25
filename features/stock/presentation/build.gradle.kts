@@ -38,7 +38,6 @@ kotlin {
             implementation(project(":core:utils"))
             implementation(project(":core:database"))
             implementation(project(":core:dto"))
-            implementation(project(":core:addons"))
 
             implementation(project(":features:stock:data"))
             implementation(project(":features:stock:domain"))

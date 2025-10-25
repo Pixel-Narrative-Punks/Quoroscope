@@ -1,4 +1,4 @@
-package com.pixnpunk.addons
+package com.pixnpunk.utils
 
 import com.pixnpunk.dto.GameSettings
 

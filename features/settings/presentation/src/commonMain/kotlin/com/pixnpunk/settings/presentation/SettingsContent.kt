@@ -5,7 +5,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -16,8 +15,6 @@ import com.pixnpunk.settings.presentation.contents.SettingsGeneralContent
 import com.pixnpunk.settings.presentation.contents.SettingsImageContent
 import com.pixnpunk.settings.presentation.contents.SettingsRootContent
 import com.pixnpunk.settings.presentation.contents.SettingsTextContent
-import com.pixnpunk.utils.SettingsUtil
-import me.zhanghai.compose.preference.LocalPreferenceFlow
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,12 +27,6 @@ fun SettingsContent(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     ProvidePreferenceLocals {
-        val flow = LocalPreferenceFlow.current
-
-        LaunchedEffect(flow.value) {
-            flow.collect { SettingsUtil.emitValue(it) }
-        }
-
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {

@@ -14,12 +14,13 @@ import com.pixnpunk.dialogs.presentation.content.DialogErrorContent
 import com.pixnpunk.dialogs.presentation.content.DialogSelectColorContent
 import com.pixnpunk.dialogs.presentation.content.DialogSelectGameContent
 import com.pixnpunk.dto.ColorPickerState
-import com.pixnpunk.utils.SettingsUtil
+import com.pixnpunk.utils.SettingsRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DialogsMainContent(
-    component: DialogsComponent
+    component: DialogsComponent,
+    settingsRepository: SettingsRepository
 ) {
     BasicAlertDialog(
         onDismissRequest = component.onDismissed
@@ -43,7 +44,7 @@ fun DialogsMainContent(
                 DialogsState.DIALOG_SELECT_COLOR -> {
                     val state = component.dialogsConfig.colorPickerState
                     if (state != null) {
-                        val settings = SettingsUtil.settingsFlow.value
+                        val settings = settingsRepository.settingsFlow.value
                         DialogSelectColorContent(
                             selectColor = { component.selectColor(Pair(state, it)) },
                             initialColor = Color(

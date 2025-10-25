@@ -25,7 +25,7 @@ kotlin {
             implementation(libs.koin.android)
         }
         commonMain.dependencies {
-            implementation(project(":core:addons"))
+            implementation(project(":core:utils"))
 
             implementation(project(":features:addons:domain"))
 

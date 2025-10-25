@@ -34,7 +34,6 @@ kotlin {
             implementation(project(":core:database"))
             implementation(project(":core:dto"))
             implementation(project(":core:utils"))
-            implementation(project(":core:addons"))
 
             implementation(compose.runtime)
             implementation(compose.foundation)

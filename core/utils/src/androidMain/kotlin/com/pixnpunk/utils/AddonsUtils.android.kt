@@ -1,15 +1,14 @@
-package com.pixnpunk.addons
+package com.pixnpunk.utils
 
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager.MATCH_ALL
-import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
+import android.content.pm.PackageManager
+import com.anggrayudi.storage.file.DocumentFileCompat
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.GameSettings
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
-import com.pixnpunk.utils.SettingsUtil
 import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -22,14 +21,18 @@ actual object AddonsUtils : KoinComponent {
     private const val ENGINE_SET_ACT_NAME: String = "com.pixnpunk.settings.ACTION_SETTINGS_UPDATE"
 
     @OptIn(ExperimentalContracts::class)
-    fun createEngineIntent(entry: GameEntry, fileSelIndex: Int): Intent {
-        val gameDir = fromFullPath(
+    fun createEngineIntent(
+        entry: GameEntry,
+        fileSelIndex: Int,
+        gameSettings: GameSettings
+    ): Intent {
+        val gameDir = DocumentFileCompat.fromFullPath(
             context = get(),
             fullPath = entry.gameDirPath,
             requiresWriteAccess = true
         )
-        val gameFile = fromFullPath(get(), entry.gameFilesPath[fileSelIndex])
-        val gameSettingsString = Json.encodeToString(SettingsUtil.settingsFlow.value)
+        val gameFile = DocumentFileCompat.fromFullPath(get(), entry.gameFilesPath[fileSelIndex])
+        val gameSettingsString = Json.Default.encodeToString(gameSettings)
 
         return if (!gameDir.isWritableDir() || !gameFile.isWritableFile()) {
             Intent()
@@ -48,7 +51,7 @@ actual object AddonsUtils : KoinComponent {
     actual fun publishAppSettings(settings: GameSettings) {
         get<Context>().sendOrderedBroadcast(
             Intent(ENGINE_SET_ACT_NAME).apply {
-                putExtra("gameAppSettings", Json.encodeToString(settings))
+                putExtra("gameAppSettings", Json.Default.encodeToString(settings))
             }, null
         )
     }
@@ -57,6 +60,9 @@ actual object AddonsUtils : KoinComponent {
         val testIntent = Intent().apply {
             component = ComponentName(ENGINE_PKG_NAME, ENGINE_CLS_NAME)
         }
-        return get<Context>().packageManager.resolveActivity(testIntent, MATCH_ALL) != null
+        return get<Context>().packageManager.resolveActivity(
+            testIntent,
+            PackageManager.MATCH_ALL
+        ) != null
     }
 }

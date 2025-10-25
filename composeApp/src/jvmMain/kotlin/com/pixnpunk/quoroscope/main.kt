@@ -4,10 +4,10 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
-import com.pixnpunk.addons.pluginsModule
 import com.pixnpunk.database.di.databaseModule
 import com.pixnpunk.network.networkModule
 import com.pixnpunk.stock.presentation.di.featureStockModules
+import com.pixnpunk.utils.settingsModule
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
@@ -24,8 +24,8 @@ private val scope = CoroutineScope(Dispatchers.Default)
 private lateinit var root: RealRootComponent
 
 fun main() {
-    startKoin {
-        modules(databaseModule, pluginsModule, networkModule)
+    val application = startKoin {
+        modules(databaseModule, networkModule, settingsModule)
         modules(featureStockModules)
     }
 
@@ -64,7 +64,7 @@ fun main() {
             onCloseRequest = ::exitApplication,
             title = "Quoroscope",
         ) {
-            RootContent(root)
+            RootContent(root, application.koin.get())
         }
     }
 }

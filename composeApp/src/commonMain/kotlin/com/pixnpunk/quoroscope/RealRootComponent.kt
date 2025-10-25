@@ -21,7 +21,6 @@ import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
-import com.pixnpunk.addons.AddonsUtils
 import com.pixnpunk.details.presentation.DetailsComponent
 import com.pixnpunk.details.presentation.RealDetailsComponent
 import com.pixnpunk.dialogs.presentation.DialogsComponent
@@ -35,12 +34,12 @@ import com.pixnpunk.settings.presentation.RealSettingsComponent
 import com.pixnpunk.settings.presentation.SettingsComponent
 import com.pixnpunk.stock.presentation.RealStockComponent
 import com.pixnpunk.stock.presentation.StockComponent
+import com.pixnpunk.utils.AddonsUtils
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
 
 class RealRootComponent(
     private val componentContext: ComponentContext,
@@ -48,8 +47,6 @@ class RealRootComponent(
     private val launchFilePicker: () -> Unit,
     private val launchEngineIntent: (Pair<GameEntry, Int>) -> Unit,
 ) : ComponentContext by componentContext, RootComponent, KoinComponent {
-
-    private val addonsRepository: AddonsUtils = get()
 
     private val dialogsNavigation = SlotNavigation<DialogsConfig>()
 
@@ -96,7 +93,7 @@ class RealRootComponent(
     }
 
     private fun selGameDialog(entry: GameEntry) {
-        if (!addonsRepository.receiveEngineAddons()) {
+        if (!AddonsUtils.receiveEngineAddons()) {
             dialogsNavigation.activate(
                 DialogsConfig(
                     dialogsState = DialogsState.DIALOG_ERROR_ADDONS

@@ -33,7 +33,6 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":core:dto"))
             implementation(project(":core:utils"))
-            implementation(project(":core:addons"))
 
             implementation(project(":features:addons:data"))
             implementation(project(":features:addons:domain"))

@@ -15,7 +15,6 @@ sealed interface RootStore : Store<RootStore.Intent, RootStore.State, RootStore.
         data class EditGame(val entry: GameEntry) : Intent
         data class DownloadNewGame(val entry: GameEntry) : Intent
         data class UpdateSettingsColor(val state: ColorPickerState, val color: Color) : Intent
-        data object StartSenderGameSetting : Intent
     }
 
     sealed interface Message

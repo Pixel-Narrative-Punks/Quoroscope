@@ -35,7 +35,6 @@ kotlin {
             implementation(project(":core:utils"))
             implementation(project(":core:database"))
             implementation(project(":core:dto"))
-            implementation(project(":core:addons"))
             implementation(project(":core:network"))
 
             implementation(project(":features:stock:domain"))
@@ -73,6 +72,8 @@ kotlin {
 
             implementation(libs.filekit.core)
             implementation(libs.filekit.dialogs)
+
+            implementation(libs.preference)
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)

@@ -68,8 +68,6 @@ include(
     ":core:database",
     // utils
     ":core:utils",
-    // plugins
-    ":core:addons",
     // dto
     ":core:dto",
     // network

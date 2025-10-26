@@ -46,8 +46,6 @@ kotlin {
             implementation(libs.koin.core)
 
             implementation(libs.ktor.client.core)
-
-            implementation(libs.preference)
         }
         jvmMain.dependencies {
             implementation(libs.kotlinx.coroutines.swing)

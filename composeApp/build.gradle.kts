@@ -1,4 +1,3 @@
-import org.gradle.kotlin.dsl.implementation
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -96,9 +95,6 @@ android {
 
     configurations {
         create("cleanedAnnotations")
-        implementation {
-            exclude(group = "org.jetbrains", module = "annotations")
-        }
     }
 
     packaging {

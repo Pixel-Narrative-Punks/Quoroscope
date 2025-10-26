@@ -1,9 +1,9 @@
 package com.pixnpunk.utils
 
-import com.pixnpunk.dto.GameSettings
+import com.pixnpunk.dto.SettingsEntity
 
 actual object AddonsUtils {
     actual fun receiveEngineAddons() : Boolean = false
-    actual fun publishAppSettings(settings: GameSettings) {
+    actual fun publishAppSettings(settings: SettingsEntity) {
     }
 }

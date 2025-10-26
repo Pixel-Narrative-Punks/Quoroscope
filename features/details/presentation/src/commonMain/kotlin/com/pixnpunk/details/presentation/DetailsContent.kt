@@ -13,13 +13,22 @@ import com.pixnpunk.details.presentation.content.DetailsButtonsSet
 import com.pixnpunk.details.presentation.content.DetailsDescription
 import com.pixnpunk.details.presentation.content.DetailsPrimaryInfo
 import com.pixnpunk.details.presentation.content.DetailsSecondaryInfo
+import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.GameListType
+import com.pixnpunk.dto.SettingsEntity
 
 @Composable
 fun DetailsContent(
-    component: DetailsComponent
+    component: DetailsComponent,
+    settings: SettingsEntity
 ) {
     val entry = component.entryShow
+
+    val numCountInfo =
+        when (settings.binaryPref) {
+            BinaryPrefFormat.SI -> 1000
+            BinaryPrefFormat.ISO -> 1024
+        }
 
     Scaffold(
         topBar = { DetailsAppBar(component) }
@@ -33,7 +42,7 @@ fun DetailsContent(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             DetailsPrimaryInfo(entry)
-            DetailsSecondaryInfo(entry)
+            DetailsSecondaryInfo(entry, numCountInfo)
             DetailsButtonsSet(
                 gameType = entry.listId,
                 onShowSelectGameDialog = { component.showSelectGameDialog(entry) },

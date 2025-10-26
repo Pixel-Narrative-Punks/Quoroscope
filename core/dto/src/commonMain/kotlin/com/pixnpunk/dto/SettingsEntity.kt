@@ -3,7 +3,7 @@ package com.pixnpunk.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class GameSettings(
+data class SettingsEntity(
     val typeface: FontTypeface = FontTypeface.DEFAULT,
     val fontSize: Int = 16,
     val isUseGameFont: Boolean = false,
@@ -31,5 +31,8 @@ data class GameSettings(
     val nativeLibFrom: NativeLibAuthors = NativeLibAuthors.SEEDHARTHA,
     val visActsCount: Int = 3,
     val language: String = "",
-    val theme: String = ""
+    val theme: String = "",
+
+    @Transient
+    val binaryPref: BinaryPrefFormat = BinaryPrefFormat.SI
 )

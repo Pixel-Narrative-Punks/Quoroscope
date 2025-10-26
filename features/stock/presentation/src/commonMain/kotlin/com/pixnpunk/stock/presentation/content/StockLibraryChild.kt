@@ -22,6 +22,7 @@ import com.pixnpunk.utils.ViewUtil.calcWindowSizeClass
 @Composable
 fun StockLibraryChild(
     component: StockComponent,
+    numCountInfo: Int,
     gridState: LazyGridState
 ) {
     val lazyPagingItems = component.gameRemotePageFlow.collectAsLazyPagingItems()
@@ -36,6 +37,7 @@ fun StockLibraryChild(
             lazyPagingItems[index]?.let { gameEntry ->
                 StockLibraryGameGridItem(
                     gameEntry = gameEntry,
+                    numCountInfo = numCountInfo,
                     onClick = { component.navigateToDetails(gameEntry) }
                 )
             }

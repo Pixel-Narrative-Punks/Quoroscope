@@ -12,6 +12,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.AnnotatedString
+import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.NativeLibAuthors
 import me.zhanghai.compose.preference.listPreference
 import me.zhanghai.compose.preference.switchPreference
@@ -89,14 +90,13 @@ fun SettingsGeneralContent(
                     contentDescription = null
                 )
             },
-            defaultValue = 1000,
-            values = listOf(1000, 1024),
+            defaultValue = BinaryPrefFormat.SI.toString(),
+            values = BinaryPrefFormat.entries.map { it.toString() },
             valueToText = {
                 AnnotatedString(
-                    when (it) {
-                        1000 -> "B/KB/MB/GB/TB"
-                        1024 -> "B/KiB/MiB/GiB/TiB"
-                        else -> it.toString()
+                    when (BinaryPrefFormat.valueOf(it)) {
+                        BinaryPrefFormat.SI -> "B/KB/MB/GB/TB"
+                        BinaryPrefFormat.ISO -> "B/KiB/MiB/GiB/TiB"
                     }
                 )
             },

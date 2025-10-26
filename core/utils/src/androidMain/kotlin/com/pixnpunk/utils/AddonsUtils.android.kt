@@ -6,7 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import com.anggrayudi.storage.file.DocumentFileCompat
 import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.dto.GameSettings
+import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import kotlinx.serialization.json.Json
@@ -24,7 +24,7 @@ actual object AddonsUtils : KoinComponent {
     fun createEngineIntent(
         entry: GameEntry,
         fileSelIndex: Int,
-        gameSettings: GameSettings
+        settingsEntity: SettingsEntity
     ): Intent {
         val gameDir = DocumentFileCompat.fromFullPath(
             context = get(),
@@ -32,7 +32,7 @@ actual object AddonsUtils : KoinComponent {
             requiresWriteAccess = true
         )
         val gameFile = DocumentFileCompat.fromFullPath(get(), entry.gameFilesPath[fileSelIndex])
-        val gameSettingsString = Json.Default.encodeToString(gameSettings)
+        val gameSettingsString = Json.Default.encodeToString(settingsEntity)
 
         return if (!gameDir.isWritableDir() || !gameFile.isWritableFile()) {
             Intent()
@@ -48,7 +48,7 @@ actual object AddonsUtils : KoinComponent {
         }
     }
 
-    actual fun publishAppSettings(settings: GameSettings) {
+    actual fun publishAppSettings(settings: SettingsEntity) {
         get<Context>().sendOrderedBroadcast(
             Intent(ENGINE_SET_ACT_NAME).apply {
                 putExtra("gameAppSettings", Json.Default.encodeToString(settings))

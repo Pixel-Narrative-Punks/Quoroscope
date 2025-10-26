@@ -20,6 +20,8 @@ import com.pixnpunk.quoroscope.theme.QuoroscopeTheme
 import com.pixnpunk.settings.presentation.SettingsContent
 import com.pixnpunk.stock.presentation.StockContent
 import com.pixnpunk.utils.SettingsRepository
+import me.zhanghai.compose.preference.LocalPreferenceFlow
+import me.zhanghai.compose.preference.ProvidePreferenceLocals
 
 @OptIn(ExperimentalDecomposeApi::class)
 @Composable
@@ -28,6 +30,12 @@ fun RootContent(
     settingsRepository: SettingsRepository
 ) {
     val dialogSlot by component.dialogSlot.subscribeAsState()
+
+    ProvidePreferenceLocals {
+        val pref by LocalPreferenceFlow.current.collectAsState()
+        settingsRepository.emitMap(pref.asMap())
+    }
+
     val settings by settingsRepository.settingsFlow.collectAsState()
 
     QuoroscopeTheme(
@@ -48,9 +56,9 @@ fun RootContent(
         ChildPanels(
             modifier = Modifier.background(MaterialTheme.colorScheme.surface),
             panels = component.childPanel,
-            mainChild = { StockContent(it.instance) },
-            detailsChild = { DetailsContent(it.instance) },
-            extraChild = { SettingsContent(it.instance) },
+            mainChild = { StockContent(it.instance, settings) },
+            detailsChild = { DetailsContent(it.instance, settings) },
+            extraChild = { SettingsContent(it.instance, settingsRepository) },
             animators = ChildPanelsAnimators(single = fade() + scale(), dual = fade() to fade()),
 //            predictiveBackParams = { // See the docs below
 //                PredictiveBackParams(

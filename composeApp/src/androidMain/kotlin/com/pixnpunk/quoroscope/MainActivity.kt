@@ -127,7 +127,7 @@ class MainActivity : ComponentActivity() {
                     AddonsUtils.createEngineIntent(
                         entry = entry,
                         fileSelIndex = i,
-                        gameSettings = settingsRepository.settingsFlow.value
+                        settingsEntity = settingsRepository.settingsFlow.value
                     )
                 )
             }

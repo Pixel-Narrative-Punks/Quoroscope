@@ -10,7 +10,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateSet
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.paging.LoadState
-import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.pixnpunk.dto.GameEntry
@@ -23,6 +22,7 @@ import com.pixnpunk.stock.presentation.content.paging.StockFullScreenLoading
 @Composable
 fun StockInstalledChild(
     component: StockComponent,
+    numCountInfo: Int,
     listState: LazyListState,
     setToDelete: SnapshotStateSet<GameEntry>,
     allEntries: SnapshotStateSet<GameEntry>,
@@ -42,6 +42,7 @@ fun StockInstalledChild(
             lazyPagingItems[index]?.let { gameEntry ->
                 StockInstalledGameListItem(
                     gameEntry = gameEntry,
+                    numCountInfo = numCountInfo,
                     isSelected = setToDelete.contains(gameEntry),
                     deleteModeActive = deleteModeActive,
                     onToggleSelection = {

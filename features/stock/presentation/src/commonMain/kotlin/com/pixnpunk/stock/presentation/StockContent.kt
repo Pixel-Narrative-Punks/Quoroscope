@@ -30,7 +30,9 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.pixnpunk.addons.presentation.AddonsContent
+import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.news.presentation.NewsContent
 import com.pixnpunk.stock.presentation.content.StockDefaultBottomBar
 import com.pixnpunk.stock.presentation.content.StockDeleteAppBar
@@ -43,7 +45,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StockContent(
-    component: StockComponent
+    component: StockComponent,
+    settings: SettingsEntity
 ) {
     val stack by component.childStack.subscribeAsState()
     val activeComponent = stack.active.instance
@@ -68,6 +71,12 @@ fun StockContent(
         is StockComponent.Child.InstalledChild, is StockComponent.Child.LibraryChild -> true
         else -> false
     }
+
+    val numCountInfo =
+        when (settings.binaryPref) {
+            BinaryPrefFormat.SI -> 1000
+            BinaryPrefFormat.ISO -> 1024
+        }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -151,17 +160,21 @@ fun StockContent(
             when (val instance = child.instance) {
                 is StockComponent.Child.AddonsChild -> AddonsContent(instance.component)
                 is StockComponent.Child.NewsChild -> NewsContent(instance.component)
-                is StockComponent.Child.InstalledChild -> {
+                is StockComponent.Child.InstalledChild ->
                     StockInstalledChild(
                         component,
+                        numCountInfo,
                         listState,
                         setToDelete,
                         setAllEntries,
                         model.isDeleteModeActive
                     )
-                }
-
-                is StockComponent.Child.LibraryChild -> StockLibraryChild(component, gridState)
+                is StockComponent.Child.LibraryChild ->
+                    StockLibraryChild(
+                        component,
+                        numCountInfo,
+                        gridState
+                    )
             }
         }
     }

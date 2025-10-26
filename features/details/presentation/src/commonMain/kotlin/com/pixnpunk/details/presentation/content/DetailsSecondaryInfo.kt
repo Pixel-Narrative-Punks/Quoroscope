@@ -21,7 +21,8 @@ import java.util.*
 
 @Composable
 fun DetailsSecondaryInfo(
-    entry: GameEntry
+    entry: GameEntry,
+    numCountInfo: Int
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -59,7 +60,7 @@ fun DetailsSecondaryInfo(
                             contentDescription = null
                         )
                     },
-                    text = formatFileSize(entry.fileSize, 1024)
+                    text = formatFileSize(entry.fileSize, numCountInfo)
                 )
 
                 val dataFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())

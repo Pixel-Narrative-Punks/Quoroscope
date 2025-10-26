@@ -26,6 +26,7 @@ import com.pixnpunk.utils.FileUtil.formatFileSize
 @Composable
 fun StockLibraryGameGridItem(
     gameEntry: GameEntry,
+    numCountInfo: Int,
     onClick: () -> Unit
 ) {
     Card(
@@ -55,10 +56,12 @@ fun StockLibraryGameGridItem(
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.titleMedium
             )
-            Text(
-                text = "Size: ${formatFileSize(gameEntry.fileSize, 1024)}",
-                style = MaterialTheme.typography.bodyMedium
-            )
+            if (gameEntry.fileSize != 0L) {
+                Text(
+                    text = "Size: ${formatFileSize(gameEntry.fileSize, numCountInfo)}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }

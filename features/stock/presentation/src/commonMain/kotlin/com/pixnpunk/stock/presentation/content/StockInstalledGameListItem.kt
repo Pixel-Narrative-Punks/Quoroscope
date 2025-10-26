@@ -21,6 +21,7 @@ import com.pixnpunk.utils.FileUtil.formatFileSize
 @Composable
 fun StockInstalledGameListItem(
     gameEntry: GameEntry,
+    numCountInfo: Int,
     isSelected: Boolean,
     deleteModeActive: Boolean,
     onToggleSelection: () -> Unit,
@@ -46,7 +47,7 @@ fun StockInstalledGameListItem(
         headlineContent = { Text(gameEntry.title) },
         supportingContent = {
             if (gameEntry.fileSize != 0L) {
-                Text(formatFileSize(gameEntry.fileSize, 1024))
+                Text(formatFileSize(gameEntry.fileSize, numCountInfo))
             } else {
                 null
             }

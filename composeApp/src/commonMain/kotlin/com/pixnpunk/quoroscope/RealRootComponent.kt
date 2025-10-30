@@ -177,7 +177,13 @@ class RealRootComponent(
             mainFactory = { _, ctx ->
                 RealStockComponent(
                     componentContext = ctx,
-                    launchDirPicker = launchDirPicker,
+                    showDialogAdd = {
+                        dialogsNavigation.activate(
+                            DialogsConfig(
+                                dialogsState = DialogsState.DIALOG_ADD_GAME
+                            )
+                        )
+                    },
                     navigateToDetails = { entryShow ->
                         panelNavigation.activateDetails(details = DetailsConfig(entryShow))
                     },

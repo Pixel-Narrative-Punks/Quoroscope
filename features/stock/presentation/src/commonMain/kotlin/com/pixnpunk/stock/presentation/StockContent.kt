@@ -100,7 +100,7 @@ fun StockContent(
                 exit = fadeOut()
             ) {
                 StockFloatButton(
-                    onClick = component.launchDirPicker,
+                    onClick = component.showDialogAdd,
                     icon = {
                         Icon(
                             imageVector = Icons.Filled.Add,

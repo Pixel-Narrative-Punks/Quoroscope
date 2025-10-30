@@ -1,12 +1,9 @@
 package com.pixnpunk.stock.presentation
 
 import androidx.paging.PagingData
-import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.router.panels.ChildPanels
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.value.Value
 import com.pixnpunk.addons.presentation.AddonsComponent
-import com.pixnpunk.details.presentation.DetailsComponent
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.news.presentation.NewsComponent
 import com.pixnpunk.stock.presentation.mvi.StockStore
@@ -18,7 +15,7 @@ sealed interface StockComponent {
 
     val model: StateFlow<StockStore.State>
 
-    val launchDirPicker: () -> Unit
+    val showDialogAdd: () -> Unit
     val navigateToSettings: () -> Unit
 
     val gameLocalPageFlow: Flow<PagingData<GameEntry>>

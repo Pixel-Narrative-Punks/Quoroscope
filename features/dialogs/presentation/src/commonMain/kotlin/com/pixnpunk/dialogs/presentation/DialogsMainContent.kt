@@ -8,7 +8,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import com.pixnpunk.dialogs.presentation.content.DialogAddGameContent
-import com.pixnpunk.dialogs.presentation.content.DialogDownloadGameContent
 import com.pixnpunk.dialogs.presentation.content.DialogEditGameContent
 import com.pixnpunk.dialogs.presentation.content.DialogErrorContent
 import com.pixnpunk.dialogs.presentation.content.DialogSelectColorContent
@@ -29,10 +28,30 @@ fun DialogsMainContent(
             shape = MaterialTheme.shapes.medium,
             tonalElevation = AlertDialogDefaults.TonalElevation
         ) {
+
             when (component.dialogsConfig.dialogsState) {
-                DialogsState.DIALOG_ADD_GAME -> DialogAddGameContent(component)
-                DialogsState.DIALOG_DOWNLOAD_GAME -> DialogDownloadGameContent(component)
-                DialogsState.DIALOG_DELETE_GAME -> TODO()
+                DialogsState.DIALOG_ADD_GAME ->
+                    DialogAddGameContent(
+                        entry = component.dialogsConfig.unfilledEntry,
+                        selectFile = component.selectFile,
+                        selectFolder = component.selectFolder,
+                        addGame = {
+                            component.addNewEntry(it)
+                            component.onDismissed()
+                        },
+                        buttonText = "Add game"
+                    )
+                DialogsState.DIALOG_DOWNLOAD_GAME ->
+                    DialogAddGameContent(
+                        entry = component.dialogsConfig.unfilledEntry,
+                        selectFile = component.selectFile,
+                        selectFolder = component.selectFolder,
+                        addGame = {
+                            component.downloadNewEntry(it)
+                            component.onDismissed()
+                        },
+                        buttonText = "Download game"
+                    )
                 DialogsState.DIALOG_EDIT_GAME -> DialogEditGameContent(component)
                 DialogsState.DIALOG_ERROR_GAME, DialogsState.DIALOG_ERROR_ADDONS ->
                     DialogErrorContent(

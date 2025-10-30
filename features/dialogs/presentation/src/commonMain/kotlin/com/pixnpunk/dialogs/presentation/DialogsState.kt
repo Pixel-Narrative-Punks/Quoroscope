@@ -3,7 +3,6 @@ package com.pixnpunk.dialogs.presentation
 enum class DialogsState {
     DIALOG_ADD_GAME,
     DIALOG_DOWNLOAD_GAME,
-    DIALOG_DELETE_GAME,
     DIALOG_EDIT_GAME,
     DIALOG_ERROR_GAME,
     DIALOG_ERROR_ADDONS,

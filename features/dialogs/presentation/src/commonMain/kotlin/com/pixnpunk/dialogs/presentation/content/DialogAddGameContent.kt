@@ -17,19 +17,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.pixnpunk.dialogs.presentation.DialogsComponent
+import com.pixnpunk.dto.GameEntry
 
 @Composable
 fun DialogAddGameContent(
-    component: DialogsComponent
+    entry: GameEntry,
+    selectFile: () -> Unit,
+    selectFolder: () -> Unit,
+    addGame: (GameEntry) -> Unit,
+    buttonText: String
 ) {
-    val entry = component.dialogsConfig.unfilledEntry
-
     var gameName by rememberSaveable { mutableStateOf(entry.title) }
-    var gameAuthor by rememberSaveable { mutableStateOf("") }
-    var gameVersion by rememberSaveable { mutableStateOf("") }
+    var gameAuthor by rememberSaveable { mutableStateOf(entry.author) }
+    var gameVersion by rememberSaveable { mutableStateOf(entry.version) }
 
-    val isButtonEnabled = gameName.isNotBlank()
+    val isButtonEnabled = gameName.isNotBlank() && entry.gameDirPath.isNotEmpty()
 
     Column(
         modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
@@ -58,7 +60,7 @@ fun DialogAddGameContent(
         )
         OutlinedButton(
             modifier = Modifier.fillMaxWidth(),
-            onClick = component.selectFile
+            onClick = selectFile
         ) {
             if (entry.gameIconPath.isNotEmpty()) {
                 AsyncImage(
@@ -71,21 +73,30 @@ fun DialogAddGameContent(
                 Text("Select icon for game")
             }
         }
+        OutlinedButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = selectFolder
+        ) {
+            if (entry.gameDirPath.isNotEmpty()) {
+                Text("Folder selected")
+            } else {
+                Text("Select folder where game stored")
+            }
+        }
         FilledTonalButton(
             modifier = Modifier.fillMaxWidth(),
             onClick = {
-                component.addNewEntry(
+                addGame(
                     entry.copy(
                         title = gameName,
                         author = gameAuthor,
                         version = gameVersion
                     )
                 )
-                component.onDismissed()
             },
             enabled = isButtonEnabled
         ) {
-            Text("Add a new game entry")
+            Text(buttonText)
         }
     }
 }

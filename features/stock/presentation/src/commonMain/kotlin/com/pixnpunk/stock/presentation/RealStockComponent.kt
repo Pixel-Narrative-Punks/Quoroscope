@@ -2,11 +2,6 @@ package com.pixnpunk.stock.presentation
 
 import androidx.paging.PagingData
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.router.panels.ChildPanels
-import com.arkivanov.decompose.router.panels.Panels
-import com.arkivanov.decompose.router.panels.PanelsNavigation
-import com.arkivanov.decompose.router.panels.childPanels
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.bringToFront
@@ -16,7 +11,6 @@ import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.addons.presentation.RealAddonsComponent
-import com.pixnpunk.details.presentation.DetailsComponent
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.GameListType
 import com.pixnpunk.news.presentation.RealNewsComponent
@@ -33,14 +27,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
 class RealStockComponent(
     private val componentContext: ComponentContext,
-    override val launchDirPicker: () -> Unit,
+    override val showDialogAdd: () -> Unit,
     val navigateToDetails: (GameEntry) -> Unit,
     override val navigateToSettings: () -> Unit
 ) : ComponentContext by componentContext, StockComponent, KoinComponent {

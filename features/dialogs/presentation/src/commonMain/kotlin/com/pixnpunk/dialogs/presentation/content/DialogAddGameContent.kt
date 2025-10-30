@@ -2,6 +2,7 @@ package com.pixnpunk.dialogs.presentation.content
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilledTonalButton
@@ -15,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 
 @Composable
@@ -59,6 +61,11 @@ fun DialogAddGameContent(
             onClick = component.selectFile
         ) {
             if (entry.gameIconPath.isNotEmpty()) {
+                AsyncImage(
+                    model = entry.gameIconPath,
+                    contentDescription = null
+                )
+                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
                 Text("Icon selected")
             } else {
                 Text("Select icon for game")

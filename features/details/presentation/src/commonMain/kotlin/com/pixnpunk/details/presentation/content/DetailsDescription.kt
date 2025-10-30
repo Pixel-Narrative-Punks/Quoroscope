@@ -1,12 +1,11 @@
 package com.pixnpunk.details.presentation.content
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -34,11 +33,10 @@ fun DetailsDescription(
     descriptionHtml: String
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
+        modifier = Modifier.padding(4.dp)
     ) {
         var isExpanded by remember { mutableStateOf(false) }
+        var isOverflowed by remember { mutableStateOf(false) }
 
         val parsedDescription = remember(descriptionHtml) {
             htmlToAnnotatedString(descriptionHtml)
@@ -47,7 +45,8 @@ fun DetailsDescription(
         Column(
             modifier = Modifier
                 .animateContentSize()
-                .padding(8.dp)
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -59,39 +58,31 @@ fun DetailsDescription(
                     modifier = Modifier.weight(1f)
                 )
 
-                val iconDesc = if (isExpanded) {
-                    "Collapse"
-                } else {
-                    "Expand"
-                }
-
-                IconButton(
-                    onClick = { isExpanded = !isExpanded }
+                AnimatedVisibility(
+                    visible = isOverflowed xor isExpanded
                 ) {
-                    Icon(
-                        imageVector =
-                            if (isExpanded) Icons.Default.KeyboardArrowUp
-                            else Icons.Default.KeyboardArrowDown,
-                        contentDescription = iconDesc
-                    )
+                    IconButton(
+                        onClick = { isExpanded = !isExpanded }
+                    ) {
+                        Icon(
+                            imageVector =
+                                if (isExpanded) Icons.Default.KeyboardArrowUp
+                                else Icons.Default.KeyboardArrowDown,
+                            contentDescription =
+                                if (isExpanded) { "Collapse" } else { "Expand" }
+                        )
+                    }
                 }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            val textModifier = if (isExpanded) {
-                Modifier
-                    .heightIn(max = 300.dp)
-                    .verticalScroll(rememberScrollState())
-            } else {
-                Modifier
             }
 
             Text(
-                modifier = textModifier,
+                modifier = if (isExpanded) { Modifier.verticalScroll(rememberScrollState()) } else { Modifier },
                 text = parsedDescription,
                 maxLines = if (isExpanded) Int.MAX_VALUE else 3,
-                overflow = if (isExpanded) TextOverflow.Clip else TextOverflow.Ellipsis
+                overflow = if (isExpanded) TextOverflow.Clip else TextOverflow.Ellipsis,
+                onTextLayout = { textLayoutResult ->
+                    isOverflowed = textLayoutResult.hasVisualOverflow
+                }
             )
         }
     }

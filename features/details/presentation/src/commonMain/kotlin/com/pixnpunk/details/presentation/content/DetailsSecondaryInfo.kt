@@ -4,7 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Commit
@@ -25,7 +25,7 @@ fun DetailsSecondaryInfo(
     numCountInfo: Int
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.padding(4.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         AnimatedVisibility(
@@ -33,7 +33,8 @@ fun DetailsSecondaryInfo(
         ) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                maxItemsInEachRow = 3
             ) {
                 InfoTag(
                     icon = {

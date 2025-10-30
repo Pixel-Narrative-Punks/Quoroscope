@@ -3,6 +3,7 @@ package com.pixnpunk.details.presentation.content
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -19,7 +20,10 @@ fun DetailsButtonsSet(
     onShowEditGameDialog: () -> Unit,
     onShowDownloadGameDialog: () -> Unit
 ) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(
+        modifier = Modifier.padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         when (gameType) {
             GameListType.Playable -> {
                 FilledTonalButton(

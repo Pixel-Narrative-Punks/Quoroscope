@@ -42,6 +42,10 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
+            implementation(libs.coil.compose)
+
+            implementation(libs.colorpicker.compose)
+
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
 
@@ -54,7 +58,6 @@ kotlin {
             implementation(libs.mvikotlin.main)
             implementation(libs.mvikotlin.coro.ext)
 
-            implementation("com.github.skydoves:colorpicker-compose:1.1.2")
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)

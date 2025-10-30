@@ -54,9 +54,13 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.uiTooling)
             implementation(compose.components.resources)
+            implementation(libs.compose.material3.windowSizeClass)
+
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation(libs.compose.material3.windowSizeClass)
+
+            implementation(libs.androidx.paging.common)
+            implementation(libs.androidx.paging.compose)
 
             implementation(libs.kotlinx.serialization.json)
 
@@ -65,9 +69,6 @@ kotlin {
 
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor3)
-
-            implementation(libs.androidx.paging.common)
-            implementation(libs.androidx.paging.compose)
 
             implementation(libs.essenty.lifecycle)
             implementation(libs.decompose.core)

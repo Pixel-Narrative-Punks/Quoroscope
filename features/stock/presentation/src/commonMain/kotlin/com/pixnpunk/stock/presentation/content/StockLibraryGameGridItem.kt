@@ -44,7 +44,7 @@ fun StockLibraryGameGridItem(
                     .size(rememberConstraintsSizeResolver())
                     .build(),
             error = rememberVectorPainter(Icons.Outlined.BrokenImage),
-            contentDescription = null,
+            contentDescription = "${gameEntry.title} icon",
             contentScale = ContentScale.FillBounds
         )
         Column(

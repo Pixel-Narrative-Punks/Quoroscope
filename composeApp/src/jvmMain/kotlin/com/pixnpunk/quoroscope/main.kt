@@ -4,6 +4,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import com.pixnpunk.addons.presentation.di.featureAddonsModule
 import com.pixnpunk.database.di.databaseModule
 import com.pixnpunk.network.networkModule
 import com.pixnpunk.stock.presentation.di.featureStockModules
@@ -27,6 +28,7 @@ fun main() {
     val application = startKoin {
         modules(databaseModule, networkModule, settingsModule)
         modules(featureStockModules)
+        modules(featureAddonsModule)
     }
 
     FileKit.init(appId = "Quoroscope")

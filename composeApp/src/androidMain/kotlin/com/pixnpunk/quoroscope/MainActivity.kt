@@ -80,7 +80,7 @@ class MainActivity : ComponentActivity() {
         }
 
     private val storageAccessLauncher =
-        registerForActivityResult(RequestStorageAccessContract(this)) { result ->
+        registerForActivityResult(RequestStorageAccessContract(get())) { result ->
             when (result) {
                 is RequestStorageAccessResult.CanceledByUser -> {
 

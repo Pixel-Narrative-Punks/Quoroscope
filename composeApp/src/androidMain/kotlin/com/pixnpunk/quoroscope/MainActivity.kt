@@ -9,10 +9,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import com.anggrayudi.storage.SimpleStorage.Companion.cleanupRedundantUriPermissions
 import com.anggrayudi.storage.SimpleStorage.Companion.hasFullDiskAccess
+import com.anggrayudi.storage.contract.FolderPickerResult
+import com.anggrayudi.storage.contract.OpenFolderPickerContract
 import com.anggrayudi.storage.contract.RequestStorageAccessContract
 import com.anggrayudi.storage.contract.RequestStorageAccessResult
 import com.anggrayudi.storage.extension.startActivitySafely
 import com.anggrayudi.storage.extension.toDocumentFile
+import com.anggrayudi.storage.file.FileFullPath
 import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.StorageId
 import com.anggrayudi.storage.file.getAbsolutePath
@@ -33,24 +36,32 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalContracts::class)
     private val dirPickerLauncher =
-        registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
-            if (it != null) {
-                val contentResolver = applicationContext.contentResolver
-                contentResolver.takePersistableUriPermission(
-                    it,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION
-                            or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                )
+        registerForActivityResult(OpenFolderPickerContract(get())) {
+            println(it.toString())
+            when (it) {
+                is FolderPickerResult.AccessDenied -> {
+                    val fileAbsPath = it.folder?.getAbsolutePath(this)
+                    if (fileAbsPath != null) {
+                        storageAccessLauncher.launch(
+                            RequestStorageAccessContract.Options(
+                                FileFullPath(this, fileAbsPath)
+                            )
+                        )
+                    }
+                }
 
-                thread { cleanupRedundantUriPermissions(applicationContext) }
+                is FolderPickerResult.CanceledByUser -> {
+                }
 
-                var newGameDir = it.toDocumentFile(this)
-                if (newGameDir.isWritableDir()) {
-                    val path = newGameDir.getAbsolutePath(this)
-                    val dirName = newGameDir.name
+                is FolderPickerResult.Picked -> {
+                    var newGameDir = it.folder
+                    if (newGameDir.isWritableDir()) {
+                        val path = newGameDir.getAbsolutePath(this)
+                        val dirName = newGameDir.name
 
-                    if (path.isNotEmpty() && dirName != null) {
-                        root.processPickedDir(dirName, path)
+                        if (path.isNotEmpty() && dirName != null) {
+                            root.processPickedDir(dirName, path)
+                        }
                     }
                 }
             }
@@ -117,7 +128,7 @@ class MainActivity : ComponentActivity() {
         root = RealRootComponent(
             componentContext = defaultComponentContext(),
             launchDirPicker = {
-                dirPickerLauncher.launch(null)
+                dirPickerLauncher.launch(OpenFolderPickerContract.Options())
             },
             launchFilePicker = {
                 filePickerLauncher.launch(arrayOf(MimeType.IMAGE))

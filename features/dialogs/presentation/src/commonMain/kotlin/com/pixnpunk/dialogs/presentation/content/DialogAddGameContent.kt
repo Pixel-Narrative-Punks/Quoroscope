@@ -12,12 +12,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.pixnpunk.dto.GameEntry
+import kotlinx.io.files.Path
 
 @Composable
 fun DialogAddGameContent(
@@ -27,9 +29,9 @@ fun DialogAddGameContent(
     addGame: (GameEntry) -> Unit,
     buttonText: String
 ) {
-    var gameName by rememberSaveable { mutableStateOf(entry.title) }
-    var gameAuthor by rememberSaveable { mutableStateOf(entry.author) }
-    var gameVersion by rememberSaveable { mutableStateOf(entry.version) }
+    var gameName = entry.title.ifBlank { Path(entry.gameDirPath).name }
+    var gameAuthor = entry.author
+    var gameVersion = entry.version
 
     val isButtonEnabled = gameName.isNotBlank() && entry.gameDirPath.isNotEmpty()
 

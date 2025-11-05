@@ -83,9 +83,18 @@ fun StockContent(
         topBar = {
             if (isStockChildren && model.isDeleteModeActive) {
                 StockDeleteAppBar(
-                    component = component,
-                    entries = setToDelete,
-                    allEntries = setAllEntries
+                    deleteSetSize = setToDelete.size,
+                    stopDeleteMode = {
+                        setToDelete.clear()
+                        setAllEntries.clear()
+                        component.stopDeleteMode()
+                    },
+                    selectAll = { setToDelete.addAll(setAllEntries) },
+                    deleteEntries = {
+                        setAllEntries.clear()
+                        component.deleteEntries(setToDelete.toSet())
+                        setToDelete.clear()
+                    },
                 )
             } else {
                 StockSearchAppBar(component, isStockChildren)

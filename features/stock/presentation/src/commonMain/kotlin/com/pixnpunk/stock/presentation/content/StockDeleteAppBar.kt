@@ -10,24 +10,19 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.snapshots.SnapshotStateSet
-import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.stock.presentation.StockComponent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StockDeleteAppBar(
-    component: StockComponent,
-    entries: SnapshotStateSet<GameEntry>,
-    allEntries: Set<GameEntry>
+    deleteSetSize: Int,
+    stopDeleteMode: () -> Unit,
+    selectAll: () -> Unit,
+    deleteEntries: () -> Unit
 ) {
     TopAppBar(
-        title = { Text("Selected ${entries.size} element's") },
+        title = { Text("Selected $deleteSetSize element's") },
         navigationIcon = {
-            IconButton(onClick = {
-                entries.clear()
-                component.stopDeleteMode()
-            }) {
+            IconButton(onClick = stopDeleteMode) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Default.ArrowBack,
                     contentDescription = ""
@@ -35,13 +30,13 @@ fun StockDeleteAppBar(
             }
         },
         actions = {
-            IconButton(onClick = { entries.addAll(allEntries) }) {
+            IconButton(onClick = selectAll) {
                 Icon(
                     imageVector = Icons.Default.SelectAll,
                     contentDescription = ""
                 )
             }
-            IconButton(onClick = { component.deleteEntries(entries) }) {
+            IconButton(onClick = deleteEntries) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = ""

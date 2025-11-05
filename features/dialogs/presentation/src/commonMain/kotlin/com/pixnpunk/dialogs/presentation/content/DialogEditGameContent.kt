@@ -16,16 +16,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.dialogs.presentation.DialogsComponent
+import com.pixnpunk.dto.GameEntry
 
 @Composable
 fun DialogEditGameContent(
-    component: DialogsComponent
+    entry: GameEntry,
+    selectFile: () -> Unit,
+    editGame: (GameEntry) -> Unit
 ) {
-    val entry = component.dialogsConfig.unfilledEntry
-
-    var gameName by rememberSaveable { mutableStateOf(entry.title) }
-    var gameAuthor by rememberSaveable { mutableStateOf("") }
-    var gameVersion by rememberSaveable { mutableStateOf("") }
+    var gameName = entry.title
+    var gameAuthor = entry.author
+    var gameVersion = entry.version
 
     val isButtonEnabled = gameName.isNotBlank()
 
@@ -56,7 +57,7 @@ fun DialogEditGameContent(
         )
         OutlinedButton(
             modifier = Modifier.fillMaxWidth(),
-            onClick = component.selectFile
+            onClick = selectFile
         ) {
             if (entry.gameIconPath.isNotEmpty()) {
                 Text("Icon selected")
@@ -67,14 +68,13 @@ fun DialogEditGameContent(
         FilledTonalButton(
             modifier = Modifier.fillMaxWidth(),
             onClick = {
-                component.editEntry(
+                editGame(
                     entry.copy(
                         title = gameName,
                         author = gameAuthor,
                         version = gameVersion
                     )
                 )
-                component.onDismissed()
             },
             enabled = isButtonEnabled
         ) {

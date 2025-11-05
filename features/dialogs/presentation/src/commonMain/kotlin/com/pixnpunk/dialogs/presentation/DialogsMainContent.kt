@@ -52,7 +52,15 @@ fun DialogsMainContent(
                         },
                         buttonText = "Download game"
                     )
-                DialogsState.DIALOG_EDIT_GAME -> DialogEditGameContent(component)
+                DialogsState.DIALOG_EDIT_GAME ->
+                    DialogEditGameContent(
+                        entry = component.dialogsConfig.unfilledEntry,
+                        selectFile = component.selectFile,
+                        editGame = {
+                            component.editEntry(it)
+                            component.onDismissed()
+                        }
+                    )
                 DialogsState.DIALOG_ERROR_GAME, DialogsState.DIALOG_ERROR_ADDONS ->
                     DialogErrorContent(
                         state = component.dialogsConfig.dialogsState,

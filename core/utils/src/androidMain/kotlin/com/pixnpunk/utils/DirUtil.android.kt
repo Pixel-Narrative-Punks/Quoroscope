@@ -31,8 +31,7 @@ actual object DirUtil : KoinComponent {
 
         val gameFilesPath = mutableListOf<String>()
         for (file in files) {
-            val fileName = file.name
-            if (fileName == null) continue
+            val fileName = file.name ?: continue
             if (fileName.endsWith(suffix = "qsp", ignoreCase = true)
                 || fileName.endsWith(suffix = "gam", ignoreCase = true)
             ) {
@@ -47,8 +46,7 @@ actual object DirUtil : KoinComponent {
                 mimeTypes = arrayOf(MimeType.BINARY_FILE)
             ).collect {
                 for (file in it) {
-                    val fileName = file.name
-                    if (fileName == null) continue
+                    val fileName = file.name ?: continue
                     if (fileName.endsWith(suffix = ".qsp", ignoreCase = true)
                         || fileName.endsWith(suffix = ".gam", ignoreCase = true)
                     ) {

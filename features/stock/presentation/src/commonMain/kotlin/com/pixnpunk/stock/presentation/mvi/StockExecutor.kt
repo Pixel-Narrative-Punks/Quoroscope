@@ -3,15 +3,14 @@ package com.pixnpunk.stock.presentation.mvi
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.stock.domain.usecase.DeleteLocalGameEntries
 import com.pixnpunk.stock.presentation.mvi.StockStore.Message.ChangeStateDeleteMode
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class StockExecutor(
     private val deleteLocalGameEntries: DeleteLocalGameEntries
 ) : CoroutineExecutor<StockStore.Intent, StockStore.Action, StockStore.State, StockStore.Message, StockStore.Label>() {
-    private val outScope = CoroutineScope(Dispatchers.Default)
 
     override fun executeIntent(intent: StockStore.Intent) {
         when (intent) {
@@ -24,19 +23,14 @@ class StockExecutor(
             }
 
             is StockStore.Intent.DeleteEntries -> {
-                outScope.launch {
-                    deleteLocalGameEntries.execute(intent.entries)
-                    scope.launch { dispatch(ChangeStateDeleteMode(false)) }
+                scope.launch {
+                    dispatch(ChangeStateDeleteMode(false))
+                    withContext(Dispatchers.IO) { deleteLocalGameEntries.execute(intent.entries) }
                 }
             }
         }
     }
 
     override fun executeAction(action: StockStore.Action) {
-    }
-
-    override fun dispose() {
-        super.dispose()
-        outScope.cancel()
     }
 }

@@ -22,13 +22,11 @@ class LocalRepositoryImpl : LocalRepository, KoinComponent {
 
     private val gameDao: GameDao by inject()
 
-    override suspend fun deleteGameEntries(entriesDelete: Set<GameEntry>): Int {
-        return gameDao.deleteAll(entriesDelete.map { entry -> entry.toEntity() })
-    }
+    override suspend fun deleteGameEntries(entriesDelete: Set<GameEntry>): Int =
+        gameDao.deleteAll(entriesDelete.map { entry -> entry.toEntity() })
 
-    override suspend fun getGameEntryById(entryId: Long): GameEntry {
-        return gameDao.getById(entryId)?.toDomain() ?: GameEntry()
-    }
+    override suspend fun getGameEntryById(entryId: Long): GameEntry =
+        gameDao.getById(entryId)?.toDomain() ?: GameEntry()
 
     override suspend fun getAllPagedGameEntries(): Flow<PagingData<GameEntry>> =
         Pager(

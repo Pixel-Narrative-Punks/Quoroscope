@@ -31,8 +31,12 @@ actual object AddonsUtils : KoinComponent {
             fullPath = entry.gameDirPath,
             requiresWriteAccess = true
         )
-        val gameFile = DocumentFileCompat.fromFullPath(get(), entry.gameFilesPath[fileSelIndex])
-        val gameSettingsString = Json.Default.encodeToString(settingsEntity)
+        val gameFile = DocumentFileCompat.fromFullPath(
+            context = get(),
+            fullPath = entry.gameFilesPath[fileSelIndex],
+            requiresWriteAccess = true
+        )
+        val gameSettingsString = Json.encodeToString(settingsEntity)
 
         return if (!gameDir.isWritableDir() || !gameFile.isWritableFile()) {
             Intent()
@@ -51,7 +55,7 @@ actual object AddonsUtils : KoinComponent {
     actual fun publishAppSettings(settings: SettingsEntity) {
         get<Context>().sendOrderedBroadcast(
             Intent(ENGINE_SET_ACT_NAME).apply {
-                putExtra("gameAppSettings", Json.Default.encodeToString(settings))
+                putExtra("gameAppSettings", Json.encodeToString(settings))
             }, null
         )
     }

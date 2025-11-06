@@ -100,6 +100,10 @@ class RealStockComponent(
         store.accept(StockStore.Intent.DeleteEntries(entries))
     }
 
+    override fun searchEntries(query: String) {
+        sourceViewModel.searchGameEntry(query)
+    }
+
     override fun navigateToDetails(entry: GameEntry) {
         if (entry.listId == GameListType.Playable) {
             navigateToDetails.invoke(entry)

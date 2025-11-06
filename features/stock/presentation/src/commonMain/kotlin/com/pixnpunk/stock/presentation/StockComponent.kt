@@ -24,6 +24,7 @@ sealed interface StockComponent {
     fun startDeleteMode()
     fun stopDeleteMode()
     fun deleteEntries(entries: Set<GameEntry>)
+    fun searchEntries(query: String)
 
     fun navigateTo(config: RealStockComponent.ChildConfig)
     fun navigateToDetails(entry: GameEntry)

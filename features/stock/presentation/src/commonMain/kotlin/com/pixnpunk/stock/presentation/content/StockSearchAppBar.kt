@@ -46,7 +46,7 @@ fun StockSearchAppBar(
                 SearchBarDefaults.InputField(
                     query = searchText,
                     onQueryChange = { searchText = it },
-                    onSearch = { },
+                    onSearch = { component.searchEntries(it) },
                     expanded = false,
                     onExpandedChange = { },
                     placeholder = { Text("Search") },

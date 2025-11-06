@@ -38,6 +38,16 @@ class LocalRepositoryImpl : LocalRepository, KoinComponent {
             pagingSourceFactory = { gameDao.getAllPaged() }
         ).flow.map { data -> data.map { entry -> entry.toDomain() } }
 
+    override suspend fun searchGameEntriesByQuery(query: String): Flow<PagingData<GameEntry>> =
+        Pager(
+            config = PagingConfig(
+                pageSize = 15,
+                initialLoadSize = 20,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { gameDao.search(query) }
+        ).flow.map { data -> data.map { entry -> entry.toDomain() } }
+
     override suspend fun updateEntry(entry: GameEntry) {
         val nullEntry = gameDao.getById(entry.id)
         if (nullEntry != null) {

@@ -13,6 +13,7 @@ interface LocalRepository {
     suspend fun deleteGameEntries(entriesDelete: Set<GameEntry>): Int
     suspend fun getGameEntryById(entryId: Long): GameEntry
     suspend fun getAllPagedGameEntries(): Flow<PagingData<GameEntry>>
+    suspend fun searchGameEntriesByQuery(query: String): Flow<PagingData<GameEntry>>
     suspend fun updateEntry(entry: GameEntry)
     suspend fun updateOrInsertEntry(entry: GameEntry)
     suspend fun insertDefaultEntry(newEntry: GameEntry)

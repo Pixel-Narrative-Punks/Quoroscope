@@ -6,6 +6,7 @@ import com.pixnpunk.stock.domain.usecase.FetchLocalSourceUseCase
 import com.pixnpunk.stock.domain.usecase.FetchRemoteDescUseCase
 import com.pixnpunk.stock.domain.usecase.FetchRemoteSourceUseCase
 import com.pixnpunk.stock.domain.usecase.FillAndInsertEntryUseCase
+import com.pixnpunk.stock.domain.usecase.SearchGameEntryUseCase
 import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -17,5 +18,6 @@ val domainModule = module {
     singleOf(::FetchLocalSourceUseCase)
     singleOf(::DeleteLocalGameEntries)
     singleOf(::DownloadGameArchUseCase)
+    singleOf(::SearchGameEntryUseCase)
     singleOf(::UpsertEntryUseCase)
 }

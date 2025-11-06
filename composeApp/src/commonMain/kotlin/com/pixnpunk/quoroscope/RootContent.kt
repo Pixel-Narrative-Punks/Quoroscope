@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -16,6 +17,9 @@ import com.arkivanov.decompose.extensions.compose.experimental.stack.animation.s
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.pixnpunk.details.presentation.DetailsContent
 import com.pixnpunk.dialogs.presentation.DialogsMainContent
+import com.pixnpunk.dto.ColorPickerState
+import com.pixnpunk.dto.InputState
+import com.pixnpunk.quoroscope.mvi.RootStore
 import com.pixnpunk.quoroscope.theme.QuoroscopeTheme
 import com.pixnpunk.settings.presentation.SettingsContent
 import com.pixnpunk.stock.presentation.StockContent
@@ -33,6 +37,32 @@ fun RootContent(
 
     ProvidePreferenceLocals {
         val pref by LocalPreferenceFlow.current.collectAsState()
+        LaunchedEffect(Unit) {
+            component.label.collect {
+                when (it) {
+                    is RootStore.Label.ColorConfig -> {
+                        settingsRepository.emitColorValue(it.state, it.color)
+                        when (it.state) {
+                            ColorPickerState.COLOR_TEXT ->
+                                pref.toMutablePreferences()["textColor"] = it.color
+                            ColorPickerState.COLOR_BACK ->
+                                pref.toMutablePreferences()["backColor"] = it.color
+                            ColorPickerState.COLOR_LINK ->
+                                pref.toMutablePreferences()["linkColor"] = it.color
+                        }
+                    }
+                    is RootStore.Label.ImageConfig -> {
+                        settingsRepository.emitImageConf(it.state, it.config)
+                        when (it.state) {
+                            InputState.INPUT_IMAGE_WIDTH ->
+                                pref.toMutablePreferences()["manualImageWidthPref"] = it.config
+                            InputState.INPUT_IMAGE_HEIGHT ->
+                                pref.toMutablePreferences()["manualImageHeightPref"] = it.config
+                        }
+                    }
+                }
+            }
+        }
         settingsRepository.emitMap(pref.asMap())
     }
 

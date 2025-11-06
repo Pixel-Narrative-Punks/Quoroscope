@@ -4,7 +4,6 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.stock.domain.usecase.DownloadGameArchUseCase
 import com.pixnpunk.stock.domain.usecase.FillAndInsertEntryUseCase
 import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase
-import com.pixnpunk.utils.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -14,7 +13,6 @@ class RootExecutor(
     private val fillAndInsertEntryUseCase: FillAndInsertEntryUseCase,
     private val upsertEntryUseCase: UpsertEntryUseCase,
     private val downloadGameArchUseCase: DownloadGameArchUseCase,
-    private val settingsRepository: SettingsRepository
 ) : CoroutineExecutor<RootStore.Intent, RootStore.Action, RootStore.State, RootStore.Message, RootStore.Label>() {
     private val outScope = CoroutineScope(Dispatchers.Default)
 
@@ -37,12 +35,12 @@ class RootExecutor(
                 }
             }
 
-            is RootStore.Intent.UpdateSettingsColor -> {
-                scope.launch {
-                    settingsRepository.emitColorValue(
-                        intent.state, intent.color
-                    )
-                }
+            is RootStore.Intent.UpdateColorConfig -> {
+                publish(RootStore.Label.ColorConfig(intent.state, intent.color))
+            }
+
+            is RootStore.Intent.UpdateImageConfig -> {
+                publish(RootStore.Label.ImageConfig(intent.state, intent.input))
             }
         }
     }

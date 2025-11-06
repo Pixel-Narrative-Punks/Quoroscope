@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import com.arkivanov.decompose.ComponentContext
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.dto.InputState
 
 class RealDialogsComponent(
     private val componentContext: ComponentContext,
@@ -14,6 +15,7 @@ class RealDialogsComponent(
     override val selectFolder: () -> Unit,
     override val selectFile: () -> Unit,
     override val selectColor: (Pair<ColorPickerState, Color>) -> Unit,
+    override val inputValue: (Pair<InputState, String>) -> Unit,
     override val doPlayGame: (GameEntry, Int) -> Unit,
     override val onDismissed: () -> Unit
 ) : ComponentContext by componentContext, DialogsComponent

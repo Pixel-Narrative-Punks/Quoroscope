@@ -62,7 +62,7 @@ fun SettingsContent(
                         SettingsGeneralContent()
 
                     is SettingsComponent.Child.PicturesChild ->
-                        SettingsImageContent()
+                        SettingsImageContent(showInputDialog = component.showInputDialog)
 
                     is SettingsComponent.Child.TextChild ->
                         SettingsTextContent(showColorDialog = component.showColorDialog)

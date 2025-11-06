@@ -7,8 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.FontTypeface
-import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.NativeLibAuthors
+import com.pixnpunk.dto.SettingsEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -39,6 +40,17 @@ class SettingsRepository : ViewModel() {
         }
     }
 
+    fun emitImageConf(state: InputState, config: String) {
+        viewModelScope.launch {
+            _settingsFlow.emit(
+                when (state) {
+                    InputState.INPUT_IMAGE_WIDTH -> SettingsEntity(imageWidth = config.toInt())
+                    InputState.INPUT_IMAGE_HEIGHT -> SettingsEntity(imageHeight = config.toInt())
+                }
+            )
+        }
+    }
+
     fun emitMap(prefMap: Map<String, Any>) {
         if (prefMap.entries.isNotEmpty()) {
             val defValue = settingsFlow.value
@@ -49,13 +61,16 @@ class SettingsRepository : ViewModel() {
                             prefMap["fontStylePref"] as? String ?: defValue.typeface.name
                         ),
                         fontSize = prefMap["fontSizePref"] as? Int ?: defValue.fontSize,
-//                isUseGameFont = true,
+
                         isUseGameTextColor = prefMap["useGameTextColorPref"] as? Boolean
                             ?: defValue.isUseGameTextColor,
+                        textColor = prefMap["textColor"] as? Int ?: defValue.textColor,
                         isUseGameBackgroundColor = prefMap["useGameBackColorPref"] as? Boolean
                             ?: defValue.isUseGameBackgroundColor,
+                        backColor = prefMap["backColor"] as? Int ?: defValue.backColor,
                         isUseGameLinkColor = prefMap["useGameLinkColorPref"] as? Boolean
                             ?: defValue.isUseGameLinkColor,
+                        linkColor = prefMap["linkColor"] as? Int ?: defValue.linkColor,
 
                         isImgLoadDis = prefMap["useGameImagesPref"] as? Boolean
                             ?: defValue.isImgLoadDis,

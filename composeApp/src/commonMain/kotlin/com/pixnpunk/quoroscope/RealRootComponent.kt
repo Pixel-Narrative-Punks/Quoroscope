@@ -20,6 +20,7 @@ import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
+import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.details.presentation.DetailsComponent
 import com.pixnpunk.details.presentation.RealDetailsComponent
@@ -35,6 +36,7 @@ import com.pixnpunk.settings.presentation.SettingsComponent
 import com.pixnpunk.stock.presentation.RealStockComponent
 import com.pixnpunk.stock.presentation.StockComponent
 import com.pixnpunk.utils.AddonsUtils
+import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
@@ -55,6 +57,8 @@ class RealRootComponent(
     private val store = instanceKeeper.getStore {
         RealRootStore(DefaultStoreFactory()).create()
     }
+
+    override val label: Flow<RootStore.Label> = store.labels
 
     fun processPickedDir(dirName: String, dirPath: String) {
         val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
@@ -142,7 +146,10 @@ class RealRootComponent(
                 selectFolder = launchDirPicker,
                 selectFile = launchFilePicker,
                 selectColor = {
-                    store.accept(RootStore.Intent.UpdateSettingsColor(it.first, it.second))
+                    store.accept(RootStore.Intent.UpdateColorConfig(it.first, it.second))
+                },
+                inputValue = {
+                    store.accept(RootStore.Intent.UpdateImageConfig(it.first, it.second))
                 },
                 doPlayGame = { entry, value -> launchEngineIntent(entry to value) },
                 onDismissed = dialogsNavigation::dismiss
@@ -168,6 +175,14 @@ class RealRootComponent(
                             DialogsConfig(
                                 dialogsState = DialogsState.DIALOG_SELECT_COLOR,
                                 colorPickerState = it
+                            )
+                        )
+                    },
+                    showInputDialog = {
+                        dialogsNavigation.activate(
+                            DialogsConfig(
+                                dialogsState = DialogsState.DIALOG_INPUT_VALUE,
+                                inputState = it
                             )
                         )
                     },

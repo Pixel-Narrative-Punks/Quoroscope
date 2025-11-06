@@ -9,16 +9,14 @@ import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import me.zhanghai.compose.preference.rememberPreferenceState
+import com.pixnpunk.dto.InputState
 import me.zhanghai.compose.preference.switchPreference
-import me.zhanghai.compose.preference.textFieldPreference
+import me.zhanghai.compose.preference.twoTargetSwitchPreference
 
 @Composable
 fun SettingsImageContent(
+    showInputDialog: (InputState) -> Unit
 ) {
-    val autoImageWidthPreferenceState = rememberPreferenceState("useAutoImageWidthPref", true)
-    val autoImageHeightPreferenceState = rememberPreferenceState("useAutoImageHeightPref", true)
-
     LazyColumn {
         switchPreference(
             key = "useGameImagesPref",
@@ -31,7 +29,7 @@ fun SettingsImageContent(
             defaultValue = false,
             title = { Text("Disable game images") }
         )
-        switchPreference(
+        twoTargetSwitchPreference(
             key = "useAutoImageWidthPref",
             icon = {
 //                Icon(
@@ -39,18 +37,16 @@ fun SettingsImageContent(
 //                    contentDescription = null
 //                )
             },
-            rememberState = { autoImageWidthPreferenceState },
             defaultValue = true,
-            title = { Text("Auto game image width") }
+            title = { Text("${if (it) "Auto" else "Manual"} game image width") },
+            summary = {
+                if (!it) {
+                    Text("Specify game image width")
+                }
+            },
+            onClick = { if (!it) { showInputDialog(InputState.INPUT_IMAGE_WIDTH) } }
         )
-        textFieldPreference(
-            key = "manualImageWidthPref",
-            enabled = { !autoImageWidthPreferenceState.value },
-            defaultValue = "400",
-            textToValue = { it.toInt() },
-            title = { Text("Manual game image width") }
-        )
-        switchPreference(
+        twoTargetSwitchPreference(
             key = "useAutoImageHeightPref",
             icon = {
                 Icon(
@@ -58,16 +54,14 @@ fun SettingsImageContent(
                     contentDescription = null
                 )
             },
-            rememberState = { autoImageHeightPreferenceState },
             defaultValue = true,
-            title = { Text("Auto game image height") }
-        )
-        textFieldPreference(
-            key = "manualImageHeightPref",
-            enabled = { !autoImageHeightPreferenceState.value },
-            defaultValue = "400",
-            textToValue = { it.toInt() },
-            title = { Text("Manual game image height") }
+            title = { Text("${if (it) "Auto" else "Manual"} game image height") },
+            summary = {
+                if (!it) {
+                    Text("Specify game image height")
+                }
+            },
+            onClick = { if (!it) { showInputDialog(InputState.INPUT_IMAGE_HEIGHT) } }
         )
         switchPreference(
             key = "useImmersImagesPref",
@@ -78,7 +72,7 @@ fun SettingsImageContent(
                 )
             },
             defaultValue = false,
-            title = { Text("All game images in dialog") }
+            title = { Text("Use dialog for game images ") }
         )
         switchPreference(
             key = "useGameImageDebug",

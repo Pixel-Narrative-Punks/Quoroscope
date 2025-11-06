@@ -18,6 +18,10 @@ class RealRootStore(
             bootstrapper = SimpleBootstrapper(
 //                RootStore.Action.StartResendGameSetting
             ),
-            executorFactory = { RootExecutor(get(), get(), get(), get()) }
+            executorFactory = {
+                RootExecutor(
+                    get(), get(), get()
+                )
+            }
         )
 }

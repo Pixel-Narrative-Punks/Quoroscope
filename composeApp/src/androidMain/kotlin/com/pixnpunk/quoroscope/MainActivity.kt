@@ -82,7 +82,7 @@ class MainActivity : ComponentActivity() {
 
                 var newGameDir = it.toDocumentFile(this)
                 if (newGameDir.isWritableFile()) {
-                    val path = newGameDir.getAbsolutePath(this)
+                    val path = newGameDir.uri.toString()
                     if (path.isNotEmpty()) {
                         root.processPickedFile(path)
                     }

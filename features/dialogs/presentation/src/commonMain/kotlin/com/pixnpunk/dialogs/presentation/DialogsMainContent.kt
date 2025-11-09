@@ -38,6 +38,7 @@ fun DialogsMainContent(
                     DialogAddGameContent(
                         entry = component.dialogsConfig.unfilledEntry,
                         selectFile = component.selectFile,
+                        deselectFile = component.deselectFile,
                         selectFolder = component.selectFolder,
                         addGame = {
                             component.addNewEntry(it)
@@ -50,6 +51,7 @@ fun DialogsMainContent(
                     DialogAddGameContent(
                         entry = component.dialogsConfig.unfilledEntry,
                         selectFile = component.selectFile,
+                        deselectFile = component.deselectFile,
                         selectFolder = component.selectFolder,
                         addGame = {
                             component.downloadNewEntry(it)

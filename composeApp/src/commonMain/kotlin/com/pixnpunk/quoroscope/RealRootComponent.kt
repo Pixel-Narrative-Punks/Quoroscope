@@ -145,6 +145,7 @@ class RealRootComponent(
                 downloadNewEntry = { store.accept(RootStore.Intent.DownloadNewGame(it)) },
                 selectFolder = launchDirPicker,
                 selectFile = launchFilePicker,
+                deselectFile = { remSelect() },
                 selectColor = {
                     store.accept(RootStore.Intent.UpdateColorConfig(it.first, it.second))
                 },
@@ -155,6 +156,19 @@ class RealRootComponent(
                 onDismissed = dialogsNavigation::dismiss
             )
         }
+
+    private fun remSelect() {
+        val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
+        if (oldConfig != null) {
+            dialogsNavigation.activate(
+                oldConfig.copy(
+                    unfilledEntry = oldConfig.unfilledEntry.copy(
+                        gameIconPath = ""
+                    )
+                )
+            )
+        }
+    }
 
     @OptIn(ExperimentalDecomposeApi::class, ExperimentalSerializationApi::class)
     override val childPanel: Value<ChildPanels<*, StockComponent, *, DetailsComponent, *, SettingsComponent>> =

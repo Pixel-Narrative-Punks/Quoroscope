@@ -14,6 +14,7 @@ class RealDialogsComponent(
     override val downloadNewEntry: (GameEntry) -> Unit,
     override val selectFolder: () -> Unit,
     override val selectFile: () -> Unit,
+    override val deselectFile: () -> Unit,
     override val selectColor: (Pair<ColorPickerState, Color>) -> Unit,
     override val inputValue: (Pair<InputState, String>) -> Unit,
     override val doPlayGame: (GameEntry, Int) -> Unit,

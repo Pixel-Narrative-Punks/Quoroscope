@@ -42,7 +42,7 @@ fun main() {
                     val fileName = directory?.nameWithoutExtension
                     val filePath = directory?.path
                     if (fileName != null && filePath != null) {
-                        root.processPickedDir(fileName, filePath)
+                        runOnUiThread { root.processPickedDir(fileName, filePath) }
                     }
                 }
             },
@@ -51,7 +51,7 @@ fun main() {
                     val file = FileKit.openFilePicker(FileKitType.Image)
                     val filePath = file?.path
                     if (filePath != null) {
-                        root.processPickedFile(filePath)
+                        runOnUiThread { root.processPickedFile(filePath) }
                     }
                 }
             },

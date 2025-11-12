@@ -14,6 +14,7 @@ import com.pixnpunk.dialogs.presentation.content.DialogAddGameContent
 import com.pixnpunk.dialogs.presentation.content.DialogEditGameContent
 import com.pixnpunk.dialogs.presentation.content.DialogErrorContent
 import com.pixnpunk.dialogs.presentation.content.DialogInputValueContent
+import com.pixnpunk.dialogs.presentation.content.DialogOutputValueContent
 import com.pixnpunk.dialogs.presentation.content.DialogSelectColorContent
 import com.pixnpunk.dialogs.presentation.content.DialogSelectGameContent
 import com.pixnpunk.dto.ColorPickerState
@@ -121,6 +122,17 @@ fun DialogsMainContent(
                                     InputState.INPUT_IMAGE_WIDTH, InputState.INPUT_IMAGE_HEIGHT ->
                                         KeyboardOptions(keyboardType = KeyboardType.Number)
                                 },
+                            onDismiss = component.onDismissed
+                        )
+                    }
+                }
+
+                DialogsState.DIALOG_OUTPUT_VALUE -> {
+                    val state = component.dialogsConfig.outputState
+                    if (state != null) {
+                        DialogOutputValueContent(
+                            message = component.dialogsConfig.outputValue,
+                            onConfirm = { component.confirmMessage(state) },
                             onDismiss = component.onDismissed
                         )
                     }

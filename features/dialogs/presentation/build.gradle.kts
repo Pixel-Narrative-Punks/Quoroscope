@@ -58,6 +58,7 @@ kotlin {
             implementation(libs.mvikotlin.main)
             implementation(libs.mvikotlin.coro.ext)
 
+            implementation(libs.htmlconverter)
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)

@@ -1,25 +1,22 @@
 package com.pixnpunk.quoroscope
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import com.anggrayudi.storage.SimpleStorage.Companion.cleanupRedundantUriPermissions
-import com.anggrayudi.storage.SimpleStorage.Companion.hasFullDiskAccess
 import com.anggrayudi.storage.contract.FolderPickerResult
 import com.anggrayudi.storage.contract.OpenFolderPickerContract
 import com.anggrayudi.storage.contract.RequestStorageAccessContract
 import com.anggrayudi.storage.contract.RequestStorageAccessResult
 import com.anggrayudi.storage.extension.startActivitySafely
 import com.anggrayudi.storage.extension.toDocumentFile
-import com.anggrayudi.storage.file.FileFullPath
 import com.anggrayudi.storage.file.MimeType
-import com.anggrayudi.storage.file.StorageId
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.arkivanov.decompose.defaultComponentContext
+import com.pixnpunk.dto.OutputState
 import com.pixnpunk.utils.AddonsUtils
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
@@ -37,20 +34,23 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalContracts::class)
     private val dirPickerLauncher =
         registerForActivityResult(OpenFolderPickerContract(get())) {
-            println(it.toString())
             when (it) {
                 is FolderPickerResult.AccessDenied -> {
-                    val fileAbsPath = it.folder?.getAbsolutePath(this)
-                    if (fileAbsPath != null) {
-                        storageAccessLauncher.launch(
-                            RequestStorageAccessContract.Options(
-                                FileFullPath(this, fileAbsPath)
-                            )
-                        )
-                    }
+                    root.showMessageDialog(
+                        message = """
+                            We require full access to your device storage so that you can easily select and add games from any folder where they are stored. 
+                            This permission ensures stable file management on older Android versions (8, 9 and 10).
+                            <br><br>
+                            <b>For external storage:</b> tap "Allow access to..." when prompted.
+                            <br>
+                            <b>For SD cards:</b> select the main folder (root directory) of the SD card and tap "Allow access to..." when prompted.
+                        """.trimIndent(),
+                        outputState = OutputState.OUTPUT_REQUEST_PERM
+                    )
                 }
 
                 is FolderPickerResult.CanceledByUser -> {
+
                 }
 
                 is FolderPickerResult.Picked -> {
@@ -119,12 +119,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
-            if (!hasFullDiskAccess(this, StorageId.PRIMARY)) {
-                storageAccessLauncher.launch(RequestStorageAccessContract.Options())
-            }
-        }
-
         root = RealRootComponent(
             componentContext = defaultComponentContext(),
             launchDirPicker = {
@@ -132,6 +126,9 @@ class MainActivity : ComponentActivity() {
             },
             launchFilePicker = {
                 filePickerLauncher.launch(arrayOf(MimeType.IMAGE))
+            },
+            launchStorageAccess = {
+                storageAccessLauncher.launch(RequestStorageAccessContract.Options())
             },
             launchEngineIntent = { (entry, i) ->
                 startActivitySafely(

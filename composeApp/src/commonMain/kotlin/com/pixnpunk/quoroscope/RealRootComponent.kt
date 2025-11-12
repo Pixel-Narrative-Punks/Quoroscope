@@ -29,6 +29,7 @@ import com.pixnpunk.dialogs.presentation.DialogsConfig
 import com.pixnpunk.dialogs.presentation.DialogsState
 import com.pixnpunk.dialogs.presentation.RealDialogsComponent
 import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.dto.OutputState
 import com.pixnpunk.quoroscope.mvi.RealRootStore
 import com.pixnpunk.quoroscope.mvi.RootStore
 import com.pixnpunk.settings.presentation.RealSettingsComponent
@@ -47,6 +48,7 @@ class RealRootComponent(
     private val componentContext: ComponentContext,
     private val launchDirPicker: () -> Unit,
     private val launchFilePicker: () -> Unit,
+    private val launchStorageAccess: () -> Unit,
     private val launchEngineIntent: (Pair<GameEntry, Int>) -> Unit,
 ) : ComponentContext by componentContext, RootComponent, KoinComponent {
 
@@ -94,6 +96,19 @@ class RealRootComponent(
                 )
             )
         }
+    }
+
+    fun showMessageDialog(
+        message: String,
+        outputState: OutputState
+    ) {
+        dialogsNavigation.activate(
+            DialogsConfig(
+                dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
+                outputValue = message,
+                outputState = outputState
+            )
+        )
     }
 
     private fun selGameDialog(entry: GameEntry) {
@@ -148,6 +163,11 @@ class RealRootComponent(
                 deselectFile = { remSelect() },
                 selectColor = {
                     store.accept(RootStore.Intent.UpdateColorConfig(it.first, it.second))
+                },
+                confirmMessage = {
+                    when (it) {
+                        OutputState.OUTPUT_REQUEST_PERM -> launchStorageAccess()
+                    }
                 },
                 inputValue = {
                     store.accept(RootStore.Intent.UpdateImageConfig(it.first, it.second))

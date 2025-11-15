@@ -6,11 +6,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.launch
 import com.anggrayudi.storage.SimpleStorage.Companion.cleanupRedundantUriPermissions
 import com.anggrayudi.storage.contract.FolderPickerResult
 import com.anggrayudi.storage.contract.OpenFolderPickerContract
 import com.anggrayudi.storage.contract.RequestStorageAccessContract
 import com.anggrayudi.storage.contract.RequestStorageAccessResult
+import com.anggrayudi.storage.contract.StoragePermissionContract
+import com.anggrayudi.storage.contract.StoragePermissionDeniedException
 import com.anggrayudi.storage.extension.startActivitySafely
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.MimeType
@@ -32,7 +35,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var root: RealRootComponent
 
     @OptIn(ExperimentalContracts::class)
-    private val dirPickerLauncher =
+    private val dirPickerLauncher = runCatching {
         registerForActivityResult(OpenFolderPickerContract(get())) {
             when (it) {
                 is FolderPickerResult.AccessDenied -> {
@@ -66,9 +69,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
 
     @OptIn(ExperimentalContracts::class)
-    private val filePickerLauncher =
+    private val filePickerLauncher = runCatching {
         registerForActivityResult(ActivityResultContracts.OpenDocument()) {
             if (it != null) {
                 val contentResolver = applicationContext.contentResolver
@@ -89,8 +93,9 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
 
-    private val storageAccessLauncher =
+    private val storageAccessLauncher = runCatching {
         registerForActivityResult(RequestStorageAccessContract(get())) { result ->
             when (result) {
                 is RequestStorageAccessResult.CanceledByUser -> {
@@ -114,21 +119,52 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private val storagePermissionLauncher =
+        registerForActivityResult(StoragePermissionContract()) { result ->
+
+        }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        dirPickerLauncher.onFailure {
+            when (it) {
+                is StoragePermissionDeniedException -> {
+                    storagePermissionLauncher.launch()
+                }
+            }
+        }
+
+        filePickerLauncher.onFailure {
+            when (it) {
+                is StoragePermissionDeniedException -> {
+                    storagePermissionLauncher.launch()
+                }
+            }
+        }
+
+        storageAccessLauncher.onFailure {
+            when (it) {
+                is StoragePermissionDeniedException -> {
+                    storagePermissionLauncher.launch()
+                }
+            }
+        }
+
         root = RealRootComponent(
             componentContext = defaultComponentContext(),
             launchDirPicker = {
-                dirPickerLauncher.launch(OpenFolderPickerContract.Options())
+                dirPickerLauncher.getOrNull()?.launch(OpenFolderPickerContract.Options())
             },
             launchFilePicker = {
-                filePickerLauncher.launch(arrayOf(MimeType.IMAGE))
+                filePickerLauncher.getOrNull()?.launch(arrayOf(MimeType.IMAGE))
             },
             launchStorageAccess = {
-                storageAccessLauncher.launch(RequestStorageAccessContract.Options())
+                storageAccessLauncher.getOrNull()?.launch(RequestStorageAccessContract.Options())
             },
             launchEngineIntent = { (entry, i) ->
                 startActivitySafely(

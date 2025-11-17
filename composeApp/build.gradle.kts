@@ -89,8 +89,8 @@ android {
         applicationId = "com.pixnpunk.quoroscope"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 200000
-        versionName = "1.0.0-beta"
+        versionCode = 200100
+        versionName = "1.1.0-beta"
     }
 
     configurations {

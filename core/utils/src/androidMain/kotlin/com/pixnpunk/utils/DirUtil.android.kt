@@ -4,7 +4,8 @@ import android.content.Context
 import android.os.Build
 import android.provider.DocumentsContract
 import android.provider.DocumentsContract.getDocumentMetadata
-import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
+import androidx.core.net.toUri
+import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
 import com.anggrayudi.storage.file.DocumentFileType
 import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.getAbsolutePath
@@ -16,14 +17,9 @@ import java.io.FileNotFoundException
 import kotlin.contracts.ExperimentalContracts
 
 actual object DirUtil : KoinComponent {
-
     @OptIn(ExperimentalContracts::class)
     actual suspend fun receiveGameFilesFromDir(rootDirPath: String): List<String> {
-        val gameDir = fromFullPath(
-            context = get(),
-            fullPath = rootDirPath,
-            requiresWriteAccess = true
-        )
+        val gameDir = fromUri(get(), rootDirPath.toUri())
         if (!gameDir.isWritableDir()) return listOf()
 
         val files = gameDir.listFiles()
@@ -62,7 +58,7 @@ actual object DirUtil : KoinComponent {
     @OptIn(ExperimentalContracts::class)
     actual suspend fun tryReceiveDirSize(rootDirPath: String): Long {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val dir = fromFullPath(get(), rootDirPath)
+            val dir = fromUri(get(), rootDirPath.toUri())
             if (dir.isWritableDir()) {
                 try {
                     val dirMetadata = getDocumentMetadata(get<Context>().contentResolver, dir.uri)

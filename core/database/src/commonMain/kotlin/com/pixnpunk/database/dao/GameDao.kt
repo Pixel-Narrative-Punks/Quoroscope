@@ -38,6 +38,9 @@ interface GameDao {
     @Update
     suspend fun update(game: GameEntity)
 
+    @Query("UPDATE game SET gameDirPath = :newPath WHERE id = :gameId")
+    suspend fun updateGamePath(gameId: Long, newPath: String)
+
     @Delete
     suspend fun delete(game: GameEntity)
 

@@ -27,6 +27,7 @@ fun DialogsMainContent(
     component: DialogsComponent,
     settingsRepository: SettingsRepository
 ) {
+    val state = component.dialogsConfig.dialogsState
     BasicAlertDialog(
         onDismissRequest = component.onDismissed
     ) {
@@ -34,31 +35,32 @@ fun DialogsMainContent(
             shape = MaterialTheme.shapes.medium,
             tonalElevation = AlertDialogDefaults.TonalElevation
         ) {
-            when (component.dialogsConfig.dialogsState) {
-                DialogsState.DIALOG_ADD_GAME ->
+            when (state) {
+                DialogsState.DIALOG_ADD_GAME, DialogsState.DIALOG_DOWNLOAD_GAME ->
                     DialogAddGameContent(
                         entry = component.dialogsConfig.unfilledEntry,
                         selectFile = component.selectFile,
                         deselectFile = component.deselectFile,
                         selectFolder = component.selectFolder,
                         addGame = {
-                            component.addNewEntry(it)
-                            component.onDismissed()
-                        },
-                        buttonText = "Add game"
-                    )
+                            when (state) {
+                                DialogsState.DIALOG_ADD_GAME -> {
+                                    component.addNewEntry(it)
+                                    component.onDismissed()
+                                }
 
-                DialogsState.DIALOG_DOWNLOAD_GAME ->
-                    DialogAddGameContent(
-                        entry = component.dialogsConfig.unfilledEntry,
-                        selectFile = component.selectFile,
-                        deselectFile = component.deselectFile,
-                        selectFolder = component.selectFolder,
-                        addGame = {
-                            component.downloadNewEntry(it)
-                            component.onDismissed()
+                                else -> {
+                                    component.downloadNewEntry(it)
+                                    component.onDismissed()
+                                }
+                            }
                         },
-                        buttonText = "Download game"
+                        buttonText =
+                            when (state) {
+                                DialogsState.DIALOG_ADD_GAME -> "Add game"
+
+                                else -> ""
+                            }
                     )
 
                 DialogsState.DIALOG_EDIT_GAME ->
@@ -73,7 +75,7 @@ fun DialogsMainContent(
 
                 DialogsState.DIALOG_ERROR_GAME, DialogsState.DIALOG_ERROR_ADDONS ->
                     DialogErrorContent(
-                        state = component.dialogsConfig.dialogsState,
+                        state = state,
                         gameTitle = component.dialogsConfig.unfilledEntry.title,
                         onDismiss = component.onDismissed
                     )

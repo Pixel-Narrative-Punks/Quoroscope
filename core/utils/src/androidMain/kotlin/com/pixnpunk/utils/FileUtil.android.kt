@@ -1,9 +1,11 @@
 package com.pixnpunk.utils
 
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.file.CreateMode
-import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
+import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
 import com.anggrayudi.storage.file.MimeType
+import com.anggrayudi.storage.file.getRelativePath
 import com.anggrayudi.storage.file.isWritable
 import com.anggrayudi.storage.file.makeFile
 import com.anggrayudi.storage.file.openOutputStream
@@ -36,6 +38,9 @@ actual object FileUtil : KoinComponent {
         return this.exists() && this.isDirectory && this.isWritable(get())
     }
 
+    actual fun String.receiveRelPath() =
+        fromUri(get(), this.toUri())?.getRelativePath(get()) ?: ""
+
     actual fun formatFileSize(size: Long, numCountInfo: Int): String {
         if (size <= 0) {
             return "0"
@@ -57,11 +62,7 @@ actual object FileUtil : KoinComponent {
 
     @OptIn(ExperimentalContracts::class)
     actual suspend fun createSpecialFiles(path: String) {
-        val gameDir = fromFullPath(
-            context = get(),
-            fullPath = path,
-            requiresWriteAccess = true
-        )
+        val gameDir = fromUri(get(), path.toUri())
         if (!gameDir.isWritableDir()) return
 
         gameDir.makeFile(get(), NOMEDIA_FILENAME, MimeType.TEXT, CreateMode.SKIP_IF_EXISTS)
@@ -74,11 +75,7 @@ actual object FileUtil : KoinComponent {
         fileName: String,
         destDirPath: String
     ) {
-        val gameDir = fromFullPath(
-            context = get(),
-            fullPath = destDirPath,
-            requiresWriteAccess = true
-        )
+        val gameDir = fromUri(get(), destDirPath.toUri())
         if (!gameDir.isWritableDir()) return
         val destFile = gameDir.makeFile(get(), fileName, mode = CreateMode.SKIP_IF_EXISTS)
         if (!destFile.isWritableFile()) return

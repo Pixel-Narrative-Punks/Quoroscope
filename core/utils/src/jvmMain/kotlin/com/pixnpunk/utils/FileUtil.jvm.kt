@@ -4,10 +4,14 @@ import io.ktor.util.cio.*
 import io.ktor.utils.io.*
 import java.io.File
 import java.text.DecimalFormat
+import kotlin.io.path.Path
 import kotlin.math.log10
 import kotlin.math.pow
 
 actual object FileUtil {
+    actual fun String.receiveRelPath(): String =
+        File(this).name
+
     actual fun formatFileSize(size: Long, numCountInfo: Int): String {
         if (size <= 0) {
             return "0"

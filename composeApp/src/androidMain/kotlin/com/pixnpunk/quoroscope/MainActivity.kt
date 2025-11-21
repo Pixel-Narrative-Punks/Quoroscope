@@ -17,7 +17,6 @@ import com.anggrayudi.storage.contract.StoragePermissionDeniedException
 import com.anggrayudi.storage.extension.startActivitySafely
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.MimeType
-import com.anggrayudi.storage.file.getAbsolutePath
 import com.arkivanov.decompose.defaultComponentContext
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.utils.AddonsUtils
@@ -59,7 +58,7 @@ class MainActivity : ComponentActivity() {
                 is FolderPickerResult.Picked -> {
                     var newGameDir = it.folder
                     if (newGameDir.isWritableDir()) {
-                        val path = newGameDir.getAbsolutePath(this)
+                        val path = newGameDir.uri.toString()
                         val dirName = newGameDir.name
 
                         if (path.isNotEmpty() && dirName != null) {

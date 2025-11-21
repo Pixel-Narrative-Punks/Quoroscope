@@ -26,8 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.pixnpunk.dto.GameEntry
-import kotlinx.io.files.Path
-import java.io.File
+import com.pixnpunk.utils.FileUtil.receiveRelPath
 
 @Composable
 fun DialogAddGameContent(
@@ -38,7 +37,7 @@ fun DialogAddGameContent(
     addGame: (GameEntry) -> Unit,
     buttonText: String
 ) {
-    var gameName = entry.title.ifBlank { Path(entry.gameDirPath).name }
+    var gameName = entry.title.ifBlank { entry.gameDirPath.receiveRelPath() }
     var gameAuthor = entry.author
     var gameVersion = entry.version
 
@@ -117,7 +116,7 @@ fun DialogAddGameContent(
             onClick = selectFolder
         ) {
             if (entry.gameDirPath.isNotEmpty()) {
-                Text(File(entry.gameDirPath).name)
+                Text(entry.gameDirPath.receiveRelPath())
             } else {
                 Text("Select game folder")
             }

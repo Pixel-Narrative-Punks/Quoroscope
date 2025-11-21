@@ -1,6 +1,5 @@
 package com.pixnpunk.database
 
-import androidx.room.AutoMigration
 import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -12,10 +11,8 @@ import com.pixnpunk.database.model.GameFTS
 
 @Database(
     entities = [GameEntity::class, GameFTS::class],
-    autoMigrations = [
-        AutoMigration(from = 1, to = 2)
-    ],
-    version = 2)
+    version = 2
+)
 @TypeConverters(ListStringConverter::class)
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {

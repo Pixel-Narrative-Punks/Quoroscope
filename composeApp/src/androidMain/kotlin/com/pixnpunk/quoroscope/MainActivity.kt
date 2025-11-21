@@ -122,9 +122,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private val storagePermissionLauncher =
-        registerForActivityResult(StoragePermissionContract()) { result ->
-
-        }
+        registerForActivityResult(StoragePermissionContract()) { _ -> }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -2,6 +2,8 @@ package com.pixnpunk.stock.data.repository
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.pixnpunk.database.dao.GameDao
+import com.pixnpunk.database.model.GameEntity
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.stock.data.mapper.toDomain
 import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl.Companion.API_QUERY_PAGE
@@ -16,6 +18,7 @@ import io.ktor.client.request.*
 
 class RemotePagingSource(
     private val ktorClient: HttpClient,
+    private val gameDao: GameDao
 ) : PagingSource<Int, GameEntry>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, GameEntry> {
         return try {
@@ -26,7 +29,9 @@ class RemotePagingSource(
                 parameter(API_QUERY_PER_PAGE, PAGE_SIZE)
             }.body<RemoteGamesList>()
             val boxGameEntries = responseResult.gameList.toSet()
-            val gameEntries = boxGameEntries.toList().toDomain()
+            val gameEntries = boxGameEntries.toList().toDomain().filterNot {
+                it.title in gameDao.getAll().toDomain().map { entry -> entry.title }
+            }
 
             LoadResult.Page(
                 data = gameEntries,

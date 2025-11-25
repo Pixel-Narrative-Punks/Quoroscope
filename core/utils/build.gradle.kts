@@ -31,6 +31,8 @@ kotlin {
 
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.android)
+
+            implementation("com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.03")
         }
         commonMain.dependencies {
             implementation(project(":core:dto"))
@@ -46,9 +48,13 @@ kotlin {
             implementation(libs.koin.core)
 
             implementation(libs.ktor.client.core)
+
         }
         jvmMain.dependencies {
             implementation(libs.kotlinx.coroutines.swing)
+
+            implementation("net.sf.sevenzipjbinding:sevenzipjbinding:16.02-2.01")
+            implementation("net.sf.sevenzipjbinding:sevenzipjbinding-all-platforms:16.02-2.01")
         }
     }
 }

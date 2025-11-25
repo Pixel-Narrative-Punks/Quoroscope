@@ -5,6 +5,6 @@ import com.pixnpunk.stock.domain.repository.RemoteRepository
 class DownloadGameArchUseCase(
     private val remoteRepository: RemoteRepository
 ) {
-    suspend fun execute(downloadLink: String, destDirPath: String) =
+    suspend fun execute(downloadLink: String, destDirPath: String): Result<String> =
         remoteRepository.downloadGameArch(downloadLink, destDirPath)
 }

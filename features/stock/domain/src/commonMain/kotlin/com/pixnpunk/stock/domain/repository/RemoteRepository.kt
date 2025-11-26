@@ -11,5 +11,5 @@ interface RemoteRepository {
 
     suspend fun fetchDescription(descUrl: String): String
     suspend fun fetchRemoteSource(): Flow<PagingData<GameEntry>>
-    suspend fun downloadGameArch(downloadLink: String, destDirPath: String): Result<String>
+    suspend fun downloadUnpackGame(downloadLink: String, destDirPath: String): Result<String>
 }

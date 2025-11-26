@@ -55,7 +55,7 @@ class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
             pagingSourceFactory = { RemotePagingSource(get(), gameDao) }
         ).flow
 
-    override suspend fun downloadGameArch(downloadLink: String, destDirPath: String): Result<String> =
+    override suspend fun downloadUnpackGame(downloadLink: String, destDirPath: String): Result<String> =
         get<HttpClient>().prepareGet(
             urlString = downloadLink,
             block = {
@@ -80,7 +80,6 @@ class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
             }
         ).execute { response ->
             if (response.status.isSuccess()) {
-                gameDao.getAll()
                 val contentDisposition = response.headers[HttpHeaders.ContentDisposition]
                 val headerValues = parseHeaderValue(contentDisposition)
                 val fileName = headerValues.firstOrNull()?.params?.firstOrNull()?.value

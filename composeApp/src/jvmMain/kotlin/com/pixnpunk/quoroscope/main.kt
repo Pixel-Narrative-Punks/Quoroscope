@@ -10,9 +10,11 @@ import com.pixnpunk.network.networkModule
 import com.pixnpunk.stock.presentation.di.featureStockModules
 import com.pixnpunk.utils.settingsModule
 import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import io.github.vinceglb.filekit.dialogs.openFilePicker
+import io.github.vinceglb.filekit.mimeType.MimeType
 import io.github.vinceglb.filekit.nameWithoutExtension
 import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.CoroutineScope
@@ -43,6 +45,18 @@ fun main() {
                     val filePath = directory?.path
                     if (fileName != null && filePath != null) {
                         runOnUiThread { root.processPickedDir(fileName, filePath) }
+                    }
+                }
+            },
+            launchFilesPicker = {
+                scope.launch {
+                    val files = FileKit.openFilePicker(
+                        mode = FileKitMode.Multiple(),
+                        type = FileKitType.File("qsp", "gam")
+                    )
+                    val filePaths = files?.map { f -> f.path }
+                    if (filePaths != null) {
+                        runOnUiThread { root.processPickedFiles(filePaths) }
                     }
                 }
             },

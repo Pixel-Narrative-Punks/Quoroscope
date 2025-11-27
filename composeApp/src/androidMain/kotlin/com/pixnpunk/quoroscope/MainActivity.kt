@@ -1,12 +1,14 @@
 package com.pixnpunk.quoroscope
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
+import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.SimpleStorage.Companion.cleanupRedundantUriPermissions
 import com.anggrayudi.storage.contract.FolderPickerResult
 import com.anggrayudi.storage.contract.OpenFolderPickerContract
@@ -24,6 +26,7 @@ import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.SettingsRepository
 import org.koin.android.ext.android.get
+import java.io.File
 import kotlin.concurrent.thread
 import kotlin.contracts.ExperimentalContracts
 
@@ -94,6 +97,33 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalContracts::class)
+    private val filesPickerLauncher = runCatching {
+        registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) {
+            if (it.isNotEmpty()) {
+                var docGameFilesList = mutableListOf<String>()
+                it.forEach { uri ->
+                    val contentResolver = applicationContext.contentResolver
+                    contentResolver.takePersistableUriPermission(
+                        uri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    )
+                    val file = uri.toDocumentFile(this)
+                    if (file.isWritableFile()) {
+                        docGameFilesList.add(file.uri.toString())
+                    }
+                }
+
+                thread { cleanupRedundantUriPermissions(applicationContext) }
+
+                if (docGameFilesList.isNotEmpty()) {
+                    root.processPickedFiles(docGameFilesList)
+                }
+            }
+        }
+    }
+
     private val storageAccessLauncher = runCatching {
         registerForActivityResult(RequestStorageAccessContract(get())) { result ->
             when (result) {
@@ -136,6 +166,14 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        filesPickerLauncher.onFailure {
+            when (it) {
+                is StoragePermissionDeniedException -> {
+                    storagePermissionLauncher.launch()
+                }
+            }
+        }
+
         filePickerLauncher.onFailure {
             when (it) {
                 is StoragePermissionDeniedException -> {
@@ -156,6 +194,9 @@ class MainActivity : ComponentActivity() {
             componentContext = defaultComponentContext(),
             launchDirPicker = {
                 dirPickerLauncher.getOrNull()?.launch(OpenFolderPickerContract.Options())
+            },
+            launchFilesPicker = {
+
             },
             launchFilePicker = {
                 filePickerLauncher.getOrNull()?.launch(arrayOf(MimeType.IMAGE))

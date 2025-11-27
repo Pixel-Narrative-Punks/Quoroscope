@@ -74,7 +74,7 @@ class LocalRepositoryImpl : LocalRepository, KoinComponent {
         insertDefaultEntry(
             entry.copy(
                 listId = GameListType.Playable,
-                gameFilesPath = receiveGameFilesFromDir(gameDirPath),
+                gameFilesPath = entry.gameFilesPath.ifEmpty { receiveGameFilesFromDir(gameDirPath) },
                 fileSize = tryReceiveDirSize(gameDirPath)
             )
         )

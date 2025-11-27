@@ -1,13 +1,12 @@
 package com.pixnpunk.utils
 
 import android.content.Context
-import android.util.Log
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.file.CreateMode
 import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
 import com.anggrayudi.storage.file.MimeType
-import com.anggrayudi.storage.file.children
+import com.anggrayudi.storage.file.baseName
 import com.anggrayudi.storage.file.getRelativePath
 import com.anggrayudi.storage.file.isWritable
 import com.anggrayudi.storage.file.makeFile
@@ -34,10 +33,8 @@ import java.io.OutputStream
 import java.text.DecimalFormat
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
-import kotlin.io.path.isDirectory
 import kotlin.math.log10
 import kotlin.math.pow
-
 
 actual object FileUtil : KoinComponent {
     @ExperimentalContracts
@@ -58,8 +55,11 @@ actual object FileUtil : KoinComponent {
         return this.exists() && this.isDirectory && this.isWritable(get())
     }
 
-    actual fun String.receiveRelPath() =
-        fromUri(get(), this.toUri())?.getRelativePath(get()) ?: ""
+    actual fun String.receiveRelPath() = fromUri(get(), this.toUri()).let {
+        return@let if (it != null) {
+            it.getRelativePath(get()) + "/" + it.baseName
+        } else { "" }
+    }
 
     actual fun formatFileSize(size: Long, numCountInfo: Int): String {
         if (size <= 0) {

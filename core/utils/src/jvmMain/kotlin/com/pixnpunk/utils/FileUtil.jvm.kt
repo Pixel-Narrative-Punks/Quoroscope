@@ -29,7 +29,11 @@ import kotlin.math.pow
 
 actual object FileUtil {
     actual fun String.receiveRelPath(): String =
-        File(this).name
+        File(this).let {
+            return@let if (it.exists()) {
+                it.parentFile.name + File.separator + it.nameWithoutExtension
+            } else { "" }
+        }
 
     actual fun formatFileSize(size: Long, numCountInfo: Int): String {
         if (size <= 0) {

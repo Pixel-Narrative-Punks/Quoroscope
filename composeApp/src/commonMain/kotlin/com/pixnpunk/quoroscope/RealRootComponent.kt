@@ -47,6 +47,7 @@ import org.koin.core.component.KoinComponent
 class RealRootComponent(
     private val componentContext: ComponentContext,
     private val launchDirPicker: () -> Unit,
+    private val launchFilesPicker: () -> Unit,
     private val launchFilePicker: () -> Unit,
     private val launchStorageAccess: () -> Unit,
     private val launchEngineIntent: (Pair<GameEntry, Int>) -> Unit,
@@ -79,6 +80,19 @@ class RealRootComponent(
                     unfilledEntry = GameEntry(
                         title = dirName,
                         gameDirPath = dirPath,
+                    )
+                )
+            )
+        }
+    }
+
+    fun processPickedFiles(filePaths: List<String>) {
+        val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
+        if (oldConfig != null) {
+            dialogsNavigation.activate(
+                oldConfig.copy(
+                    unfilledEntry = oldConfig.unfilledEntry.copy(
+                        gameFilesPath = filePaths
                     )
                 )
             )
@@ -159,8 +173,10 @@ class RealRootComponent(
                 editEntry = { store.accept(RootStore.Intent.EditGame(it)) },
                 downloadNewEntry = { store.accept(RootStore.Intent.DownloadNewGame(it)) },
                 selectFolder = launchDirPicker,
+                deselectDir = { remFolderSelect() },
+                selectFiles = launchFilesPicker,
                 selectFile = launchFilePicker,
-                deselectFile = { remSelect() },
+                deselectFile = { remFileSelect(it) },
                 selectColor = {
                     store.accept(RootStore.Intent.UpdateColorConfig(it.first, it.second))
                 },
@@ -177,16 +193,43 @@ class RealRootComponent(
             )
         }
 
-    private fun remSelect() {
+    private fun remFolderSelect() {
         val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
         if (oldConfig != null) {
             dialogsNavigation.activate(
                 oldConfig.copy(
                     unfilledEntry = oldConfig.unfilledEntry.copy(
-                        gameIconPath = ""
+                        gameDirPath = ""
                     )
                 )
             )
+        }
+    }
+
+    private fun remFileSelect(path: String) {
+        val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
+        if (oldConfig != null) {
+            if (path.isNotEmpty()) {
+                dialogsNavigation.activate(
+                    oldConfig.copy(
+                        unfilledEntry = oldConfig.unfilledEntry.copy(
+                            gameFilesPath = let {
+                                val list = oldConfig.unfilledEntry.gameFilesPath.toMutableList()
+                                list.remove(path)
+                                list
+                            }
+                        )
+                    )
+                )
+            } else {
+                dialogsNavigation.activate(
+                    oldConfig.copy(
+                        unfilledEntry = oldConfig.unfilledEntry.copy(
+                            gameIconPath = ""
+                        )
+                    )
+                )
+            }
         }
     }
 

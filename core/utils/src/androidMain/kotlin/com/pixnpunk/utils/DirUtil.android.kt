@@ -8,7 +8,7 @@ import androidx.core.net.toUri
 import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
 import com.anggrayudi.storage.file.DocumentFileType
 import com.anggrayudi.storage.file.MimeType
-import com.anggrayudi.storage.file.getAbsolutePath
+import com.anggrayudi.storage.file.children
 import com.anggrayudi.storage.file.search
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import org.koin.core.component.KoinComponent
@@ -22,16 +22,16 @@ actual object DirUtil : KoinComponent {
         val gameDir = fromUri(get(), rootDirPath.toUri())
         if (!gameDir.isWritableDir()) return listOf()
 
-        val files = gameDir.listFiles()
-        if (files.size == 0) return listOf()
+        val gameDirFiles = gameDir.children
+        if (gameDirFiles.isEmpty()) return listOf()
 
         val gameFilesPath = mutableListOf<String>()
-        for (file in files) {
+        for (file in gameDirFiles) {
             val fileName = file.name ?: continue
             if (fileName.endsWith(suffix = "qsp", ignoreCase = true)
                 || fileName.endsWith(suffix = "gam", ignoreCase = true)
             ) {
-                gameFilesPath.add(file.getAbsolutePath(get()))
+                gameFilesPath.add(file.uri.toString())
             }
         }
 
@@ -46,7 +46,7 @@ actual object DirUtil : KoinComponent {
                     if (fileName.endsWith(suffix = ".qsp", ignoreCase = true)
                         || fileName.endsWith(suffix = ".gam", ignoreCase = true)
                     ) {
-                        gameFilesPath.add(file.getAbsolutePath(get()))
+                        gameFilesPath.add(file.uri.toString())
                     }
                 }
             }

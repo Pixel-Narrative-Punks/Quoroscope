@@ -196,7 +196,7 @@ class MainActivity : ComponentActivity() {
                 dirPickerLauncher.getOrNull()?.launch(OpenFolderPickerContract.Options())
             },
             launchFilesPicker = {
-
+                filesPickerLauncher.getOrNull()?.launch(arrayOf(MimeType.BINARY_FILE))
             },
             launchFilePicker = {
                 filePickerLauncher.getOrNull()?.launch(arrayOf(MimeType.IMAGE))

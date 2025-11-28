@@ -4,7 +4,9 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import com.anggrayudi.storage.file.DocumentFileCompat
+import androidx.core.net.toUri
+import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
+import com.anggrayudi.storage.file.isExternalStorageDocument
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.utils.FileUtil.isWritableDir
@@ -26,21 +28,28 @@ actual object AddonsUtils : KoinComponent {
         fileSelIndex: Int,
         settingsEntity: SettingsEntity
     ): Intent {
-        val gameDir = DocumentFileCompat.fromFullPath(
-            context = get(),
-            fullPath = entry.gameDirPath,
-            requiresWriteAccess = true
-        )
-        val gameFile = DocumentFileCompat.fromFullPath(
-            context = get(),
-            fullPath = entry.gameFilesPath[fileSelIndex],
-            requiresWriteAccess = true
-        )
+        val gameDir = fromUri(get(), entry.gameDirPath.toUri())
+        val gameFile = fromUri(get(), entry.gameFilesPath[fileSelIndex].toUri())
         val gameSettingsString = Json.encodeToString(settingsEntity)
 
         return if (!gameDir.isWritableDir() || !gameFile.isWritableFile()) {
             Intent()
         } else {
+            get<Context>().grantUriPermission(
+                ENGINE_PKG_NAME,
+                gameDir.uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        and Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+            get<Context>().grantUriPermission(
+                ENGINE_PKG_NAME,
+                gameFile.uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        and Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+
+            gameDir.isExternalStorageDocument
+
             Intent().apply {
                 component = ComponentName(ENGINE_PKG_NAME, ENGINE_CLS_NAME)
                 putExtra("gameId", entry.id)

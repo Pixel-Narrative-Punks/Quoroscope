@@ -5,9 +5,12 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -21,10 +24,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.arkivanov.decompose.extensions.compose.stack.Children
@@ -67,10 +72,12 @@ fun StockContent(
             gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset == 0
         }
     }
-    val isStockChildren = when (activeComponent) {
-        is StockComponent.Child.InstalledChild, is StockComponent.Child.LibraryChild -> true
-        else -> false
-    }
+
+    val isStockChildren = activeComponent is StockComponent.Child.StockChild
+
+    val tabState = rememberSaveable { mutableIntStateOf(TabState.INSTALLED.ordinal) }
+    val pagerState = rememberPagerState { TabState.entries.size }
+    pagerState.requestScrollToPage(tabState.value)
 
     val numCountInfo =
         when (settings.binaryPref) {
@@ -97,13 +104,13 @@ fun StockContent(
                     },
                 )
             } else {
-                StockSearchAppBar(component, isStockChildren)
+                StockSearchAppBar(component, isStockChildren, tabState)
             }
         },
         floatingActionButton = {
             AnimatedVisibility(
                 visible = isAtTop
-                        && activeComponent is StockComponent.Child.InstalledChild
+                        && tabState.value == TabState.INSTALLED.ordinal
                         && !model.isDeleteModeActive,
                 enter = fadeIn(),
                 exit = fadeOut()
@@ -120,7 +127,7 @@ fun StockContent(
             }
             AnimatedVisibility(
                 visible = !isAtTop
-                        && activeComponent is StockComponent.Child.LibraryChild,
+                        && tabState.value == TabState.LIBRARY.ordinal,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
@@ -167,23 +174,35 @@ fun StockContent(
             stack = stack
         ) { child ->
             when (val instance = child.instance) {
+                is StockComponent.Child.StockChild -> {
+                    HorizontalPager(
+                        modifier = Modifier.fillMaxHeight(),
+                        verticalAlignment = Alignment.Top,
+                        state = pagerState
+                    ) {
+                        tabState.value = pagerState.targetPage
+                        when (it) {
+                            TabState.LIBRARY.ordinal ->
+                                StockLibraryChild(
+                                    component,
+                                    numCountInfo,
+                                    gridState
+                                )
+
+                            TabState.INSTALLED.ordinal ->
+                                StockInstalledChild(
+                                    component,
+                                    numCountInfo,
+                                    listState,
+                                    setToDelete,
+                                    setAllEntries,
+                                    model.isDeleteModeActive
+                                )
+                        }
+                    }
+                }
                 is StockComponent.Child.AddonsChild -> AddonsContent(instance.component)
                 is StockComponent.Child.NewsChild -> NewsContent(instance.component)
-                is StockComponent.Child.InstalledChild ->
-                    StockInstalledChild(
-                        component,
-                        numCountInfo,
-                        listState,
-                        setToDelete,
-                        setAllEntries,
-                        model.isDeleteModeActive
-                    )
-                is StockComponent.Child.LibraryChild ->
-                    StockLibraryChild(
-                        component,
-                        numCountInfo,
-                        gridState
-                    )
             }
         }
     }

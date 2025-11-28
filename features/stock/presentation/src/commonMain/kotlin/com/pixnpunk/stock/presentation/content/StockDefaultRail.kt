@@ -43,7 +43,7 @@ fun StockDefaultRail(
         )
         NavigationRailItem(
             selected = isStockChildren,
-            onClick = { component.navigateTo(RealStockComponent.ChildConfig.Installed) },
+            onClick = { component.navigateTo(RealStockComponent.ChildConfig.Stock) },
             icon = {
                 if (isStockChildren) {
                     Icon(

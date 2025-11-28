@@ -15,8 +15,8 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -32,9 +32,9 @@ import com.pixnpunk.stock.presentation.TabState
 @Composable
 fun StockSearchAppBar(
     component: StockComponent,
-    isStockChildren: Boolean
+    isStockChildren: Boolean,
+    tabStateIndex: MutableIntState
 ) {
-    var innerTabState by rememberSaveable { mutableIntStateOf(TabState.INSTALLED.ordinal) }
     var searchText by rememberSaveable { mutableStateOf("") }
 
     Column(
@@ -68,19 +68,14 @@ fun StockSearchAppBar(
         if (isStockChildren) {
             PrimaryTabRow(
                 modifier = Modifier.padding(top = 10.dp),
-                selectedTabIndex = innerTabState,
+                selectedTabIndex = tabStateIndex.value,
             ) {
                 TabState.entries.forEachIndexed { index, state ->
                     Tab(
-                        selected = innerTabState == index,
+                        selected = tabStateIndex.value == index,
                         onClick = {
-                            innerTabState = index
-                            component.navigateTo(
-                                when (state) {
-                                    TabState.INSTALLED -> RealStockComponent.ChildConfig.Installed
-                                    TabState.LIBRARY -> RealStockComponent.ChildConfig.Library
-                                }
-                            )
+                            tabStateIndex.value = index
+                            component.navigateTo(RealStockComponent.ChildConfig.Stock)
                         },
                         text = {
                             Text(

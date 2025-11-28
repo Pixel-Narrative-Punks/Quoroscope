@@ -30,8 +30,7 @@ sealed interface StockComponent {
     fun navigateToDetails(entry: GameEntry)
 
     sealed class Child {
-        class InstalledChild() : Child()
-        class LibraryChild() : Child()
+        class StockChild() : Child()
         class AddonsChild(val component: AddonsComponent) : Child()
         class NewsChild(val component: NewsComponent) : Child()
     }

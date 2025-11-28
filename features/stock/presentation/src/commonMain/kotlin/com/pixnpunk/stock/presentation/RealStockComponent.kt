@@ -61,10 +61,14 @@ class RealStockComponent(
             key = "contentChildStack",
             source = contentNavigation,
             serializer = serializer(),
-            initialConfiguration = ChildConfig.Installed,
+            initialConfiguration = ChildConfig.Stock,
             handleBackButton = true,
             childFactory = { config, ctx ->
                 when (config) {
+                    is ChildConfig.Stock -> {
+                        Child.StockChild()
+                    }
+
                     is ChildConfig.Addons -> {
                         Child.AddonsChild(
                             RealAddonsComponent(ctx)
@@ -75,14 +79,6 @@ class RealStockComponent(
                         Child.NewsChild(
                             RealNewsComponent(ctx)
                         )
-                    }
-
-                    is ChildConfig.Installed -> {
-                        Child.InstalledChild()
-                    }
-
-                    is ChildConfig.Library -> {
-                        Child.LibraryChild()
                     }
                 }
             }
@@ -125,15 +121,12 @@ class RealStockComponent(
     @Serializable
     sealed class ChildConfig {
         @Serializable
+        data object Stock : ChildConfig()
+
+        @Serializable
         data object Addons : ChildConfig()
 
         @Serializable
         data object News : ChildConfig()
-
-        @Serializable
-        data object Installed : ChildConfig()
-
-        @Serializable
-        data object Library : ChildConfig()
     }
 }

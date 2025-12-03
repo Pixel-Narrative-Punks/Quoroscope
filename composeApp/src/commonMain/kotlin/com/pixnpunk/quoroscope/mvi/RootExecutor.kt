@@ -27,7 +27,9 @@ class RootExecutor(
                     downloadGameArchUseCase.execute(
                         downloadLink = intent.entry.fileUrl,
                         destDirPath = intent.entry.gameDirPath
-                    )
+                    ).onSuccess {
+                        fillAndInsertEntryUseCase.execute(intent.entry.copy(gameDirPath = it))
+                    }
                 }
             }
 

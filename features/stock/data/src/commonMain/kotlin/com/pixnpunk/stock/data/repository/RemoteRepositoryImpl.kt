@@ -95,9 +95,7 @@ class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
                         filePath = it,
                         destDirPath = destDirPath,
                         progress = _progressDownloadFlow
-                    ).onSuccess { dirPath ->
-                        return@execute Result.success(dirPath)
-                    }
+                    ).onSuccess { return@execute Result.success(destDirPath) }
                 }.onFailure {
                     _progressDownloadFlow.emit(ProgressState(progress = 1.0F))
                 }

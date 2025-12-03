@@ -32,7 +32,9 @@ actual object FileUtil {
         File(this).let {
             return@let if (it.exists()) {
                 it.parentFile.name + File.separator + it.nameWithoutExtension
-            } else { "" }
+            } else {
+                ""
+            }
         }
 
     actual fun formatFileSize(size: Long, numCountInfo: Int): String {
@@ -84,23 +86,22 @@ actual object FileUtil {
         filePath: String, // abs path
         destDirPath: String, // abs path
         progress: FlowCollector<ProgressState>
-    ) =
-        runCatching {
-            RandomAccessFileInStream(RandomAccessFile(File(filePath), "r")).use {
-                SevenZip.openInArchive(null, it).use { inArchive ->
-                    inArchive.extract(
-                        null,
-                        false,
-                        ArchiveExtractCallback(
-                            Path(destDirPath),
-                            inArchive
-                        )
+    ) = runCatching {
+        RandomAccessFileInStream(RandomAccessFile(File(filePath), "r")).use {
+            SevenZip.openInArchive(null, it).use { inArchive ->
+                inArchive.extract(
+                    null,
+                    false,
+                    ArchiveExtractCallback(
+                        Path(destDirPath),
+                        inArchive
                     )
-                }
+                )
             }
-            Path(filePath).deleteIfExists()
-            Path(destDirPath).toFile().listFiles().first { f -> f.isDirectory }.absolutePath
         }
+        Path(filePath).deleteIfExists()
+        Unit
+    }
 
     private class ArchiveExtractCallback(
         val targetFolder: Path,
@@ -114,7 +115,7 @@ actual object FileUtil {
             this.extractAskMode = extractAskMode
 
             val isFolder = inArchive.getProperty(index, PropID.IS_FOLDER) as? Boolean ?: false
-            val pathString  = inArchive.getProperty(index, PropID.PATH) as? String ?: return null
+            val pathString = inArchive.getProperty(index, PropID.PATH) as? String ?: return null
 
             val destinationPath = targetFolder.resolve(pathString).normalize()
 

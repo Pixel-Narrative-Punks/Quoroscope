@@ -18,5 +18,5 @@ expect object FileUtil {
         filePath: String,
         destDirPath: String,
         progress: FlowCollector<ProgressState>
-    ): Result<String>
+    ): Result<Unit>
 }

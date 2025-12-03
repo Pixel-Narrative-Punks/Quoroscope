@@ -161,7 +161,8 @@ actual object FileUtil : KoinComponent {
             val file = targetDir.makeFile(
                 get(),
                 pathString,
-                getExtensionFromFileName(pathString)
+                getExtensionFromFileName(pathString),
+                mode = CreateMode.REUSE
             )
 
             stream = SequentialOutStream(file!!.openOutputStream(get())!!)

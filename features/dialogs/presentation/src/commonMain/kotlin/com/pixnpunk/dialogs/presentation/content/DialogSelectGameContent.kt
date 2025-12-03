@@ -19,7 +19,7 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.dialogs.presentation.DialogsComponent
-import kotlinx.io.files.Path
+import com.pixnpunk.utils.FileUtil.receiveRelPath
 
 @Composable
 fun DialogSelectGameContent(
@@ -46,9 +46,9 @@ fun DialogSelectGameContent(
                         .padding(vertical = 8.dp)
                         .clickable {
                             component.doPlayGame(entry, index)
-                            component.onDismissed
+                            component.onDismissed()
                         },
-                    headlineContent = { Text(text = Path(item).name) }
+                    headlineContent = { Text(text = item.receiveRelPath()) }
                 )
             }
         }

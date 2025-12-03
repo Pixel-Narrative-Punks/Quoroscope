@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -75,9 +74,7 @@ fun StockContent(
 
     val isStockChildren = activeComponent is StockComponent.Child.StockChild
 
-    val tabState = rememberSaveable { mutableIntStateOf(TabState.INSTALLED.ordinal) }
     val pagerState = rememberPagerState { TabState.entries.size }
-    pagerState.requestScrollToPage(tabState.value)
 
     val numCountInfo =
         when (settings.binaryPref) {
@@ -88,7 +85,14 @@ fun StockContent(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            if (isStockChildren && model.isDeleteModeActive) {
+            if (!isStockChildren || !model.isDeleteModeActive) {
+                StockSearchAppBar(
+                    pagerState = pagerState,
+                    isStockChildren = isStockChildren,
+                    searchEntries = component::searchEntries,
+                    navigateToSettings = component.navigateToSettings
+                )
+            } else {
                 StockDeleteAppBar(
                     deleteSetSize = setToDelete.size,
                     stopDeleteMode = {
@@ -103,14 +107,12 @@ fun StockContent(
                         setToDelete.clear()
                     },
                 )
-            } else {
-                StockSearchAppBar(component, isStockChildren, tabState)
             }
         },
         floatingActionButton = {
             AnimatedVisibility(
                 visible = isAtTop
-                        && tabState.value == TabState.INSTALLED.ordinal
+                        && pagerState.currentPage == TabState.INSTALLED.ordinal
                         && !model.isDeleteModeActive,
                 enter = fadeIn(),
                 exit = fadeOut()
@@ -127,7 +129,7 @@ fun StockContent(
             }
             AnimatedVisibility(
                 visible = !isAtTop
-                        && tabState.value == TabState.LIBRARY.ordinal,
+                        && pagerState.currentPage == TabState.LIBRARY.ordinal,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
@@ -180,7 +182,6 @@ fun StockContent(
                         verticalAlignment = Alignment.Top,
                         state = pagerState
                     ) {
-                        tabState.value = pagerState.targetPage
                         when (it) {
                             TabState.LIBRARY.ordinal ->
                                 StockLibraryChild(

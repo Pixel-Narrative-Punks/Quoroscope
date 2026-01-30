@@ -39,6 +39,14 @@ include(
     // app
     ":composeApp",
     //
+    ":composeApp:share",
+    //
+    ":composeApp:targets",
+    // android
+    ":composeApp:targets:androidTarget",
+    // desktop
+    ":composeApp:targets:desktopTarget",
+    //
     ":features",
     // addons
     ":features:addons",

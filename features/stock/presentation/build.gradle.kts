@@ -22,8 +22,6 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.documentfile)
 
@@ -46,15 +44,16 @@ kotlin {
             implementation(project(":features:addons:presentation"))
             implementation(project(":features:news:presentation"))
 
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.material3AdaptiveNavigationSuite)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.ui)
-            implementation(compose.uiTooling)
-            implementation(compose.components.resources)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.material3.adaptive.nav)
             implementation(libs.compose.material3.windowSizeClass)
+            implementation(libs.compose.icons.ext)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.ui.util)
+            implementation(libs.compose.ui.preview)
+            implementation(libs.compose.resources)
 
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)

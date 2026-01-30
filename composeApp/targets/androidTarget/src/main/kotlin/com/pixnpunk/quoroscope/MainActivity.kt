@@ -1,14 +1,12 @@
 package com.pixnpunk.quoroscope
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
-import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.SimpleStorage.Companion.cleanupRedundantUriPermissions
 import com.anggrayudi.storage.contract.FolderPickerResult
 import com.anggrayudi.storage.contract.OpenFolderPickerContract
@@ -26,7 +24,6 @@ import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.SettingsRepository
 import org.koin.android.ext.android.get
-import java.io.File
 import kotlin.concurrent.thread
 import kotlin.contracts.ExperimentalContracts
 

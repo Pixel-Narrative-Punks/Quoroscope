@@ -19,7 +19,4 @@ sealed interface RootComponent {
     val childPanel: Value<ChildPanels<*, StockComponent, *, DetailsComponent, *, SettingsComponent>>
 
     val label: Flow<RootStore.Label>
-
-    @OptIn(ExperimentalDecomposeApi::class)
-    fun setMode(mode: ChildPanelsMode)
 }

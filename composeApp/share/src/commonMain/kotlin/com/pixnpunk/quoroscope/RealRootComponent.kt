@@ -3,7 +3,6 @@ package com.pixnpunk.quoroscope
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.router.panels.ChildPanels
-import com.arkivanov.decompose.router.panels.ChildPanelsMode
 import com.arkivanov.decompose.router.panels.Panels
 import com.arkivanov.decompose.router.panels.PanelsNavigation
 import com.arkivanov.decompose.router.panels.activateDetails
@@ -11,7 +10,6 @@ import com.arkivanov.decompose.router.panels.activateExtra
 import com.arkivanov.decompose.router.panels.childPanels
 import com.arkivanov.decompose.router.panels.dismissDetails
 import com.arkivanov.decompose.router.panels.dismissExtra
-import com.arkivanov.decompose.router.panels.setMode
 import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
@@ -309,11 +307,6 @@ class RealRootComponent(
                 )
             }
         )
-
-    @OptIn(ExperimentalDecomposeApi::class)
-    override fun setMode(mode: ChildPanelsMode) {
-        panelNavigation.setMode(mode)
-    }
 
     @Serializable
     private data class DetailsConfig(val entryShow: GameEntry)

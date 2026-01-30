@@ -81,8 +81,6 @@ fun RootContent(
             DialogsMainContent(it, settingsRepository)
         }
 
-        ChildPanelsModeChangedEffect(component::setMode)
-
         ChildPanels(
             modifier = Modifier.background(MaterialTheme.colorScheme.surface),
             panels = component.childPanel,

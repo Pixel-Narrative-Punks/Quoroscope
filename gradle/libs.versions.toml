@@ -18,10 +18,12 @@ composeIcons = "1.7.3"
 datastorePreferencesCore = "1.2.1"
 filekitCore = "0.14.2"
 htmlconverter = "1.1.1"
+humanReadable = "1.13.0"
 jsoup = "1.22.2"
 kotlin = "2.4.10"
 kotlinx-coroutines = "1.11.0"
 kotlinx-serialization-json = "1.11.0"
+kotlinxDatetime = "0.8.0"
 kotlinxIoCore = "0.9.1"
 ksp = "2.3.5"
 koin-bom = "4.2.2"
@@ -54,10 +56,12 @@ colorpicker-compose = { module = "com.github.skydoves:colorpicker-compose", vers
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekitCore" }
 filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekitCore" }
 htmlconverter = { module = "be.digitalia.compose.htmlconverter:htmlconverter", version.ref = "htmlconverter" }
+human-readable = { module = "nl.jacobras:Human-Readable", version.ref = "humanReadable" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-io-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-io-core", version.ref = "kotlinxIoCore" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }

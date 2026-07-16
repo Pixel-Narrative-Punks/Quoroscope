@@ -46,7 +46,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
+            implementation(libs.kotlinx.datetime)
 
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
@@ -63,7 +63,7 @@ kotlin {
             implementation(libs.mvikotlin.main)
             implementation(libs.mvikotlin.coro.ext)
 
-            implementation("nl.jacobras:Human-Readable:1.13.0")
+            implementation(libs.human.readable)
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)

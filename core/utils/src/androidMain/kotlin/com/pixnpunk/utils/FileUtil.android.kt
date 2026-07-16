@@ -1,5 +1,9 @@
 package com.pixnpunk.utils
 
+import android.icu.text.MeasureFormat
+import android.icu.text.NumberFormat
+import android.icu.util.Measure
+import android.icu.util.MeasureUnit
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.extension.toDocumentFile
@@ -8,10 +12,12 @@ import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
 import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.MimeType.getExtensionFromFileName
 import com.anggrayudi.storage.file.baseName
+import com.anggrayudi.storage.file.fullName
 import com.anggrayudi.storage.file.getRelativePath
 import com.anggrayudi.storage.file.isWritable
 import com.anggrayudi.storage.file.makeFile
 import com.anggrayudi.storage.file.openOutputStream
+import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.DownloadStatus
 import com.pixnpunk.dto.ProgressState
 import io.ktor.utils.io.*
@@ -29,17 +35,18 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import java.io.IOException
 import java.io.OutputStream
-import java.text.DecimalFormat
+import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
-import kotlin.math.log10
+import kotlin.math.ln
 import kotlin.math.pow
 
 actual object FileUtil : KoinComponent {
+
     @ExperimentalContracts
     fun DocumentFile?.isWritableFile(): Boolean {
         contract {
-            returns() implies (this@isWritableFile != null)
+            returns(true) implies (this@isWritableFile != null)
         }
         if (this == null) return false
         return this.exists() && this.isFile && this.isWritable(get())
@@ -48,34 +55,55 @@ actual object FileUtil : KoinComponent {
     @ExperimentalContracts
     fun DocumentFile?.isWritableDir(): Boolean {
         contract {
-            returns() implies (this@isWritableDir != null)
+            returns(true) implies (this@isWritableDir != null)
         }
         if (this == null) return false
         return this.exists() && this.isDirectory && this.isWritable(get())
     }
 
-    actual fun String.receiveRelPath() = fromUri(get(), this.toUri()).let {
-        return@let if (it != null) {
-            it.getRelativePath(get()) + "/" + it.baseName
-        } else {
-            ""
-        }
-    }
+    actual fun String.receiveBaseName() =
+        fromUri(get(), this.toUri())?.baseName ?: ""
 
-    actual fun formatFileSize(size: Long, numCountInfo: Int): String {
-        if (size <= 0) {
-            return "0"
+    actual fun String.receiveFullName() =
+        fromUri(get(), this.toUri())?.fullName ?: ""
+
+    actual fun String.receiveDirRelPath() =
+        fromUri(get(), this.toUri())?.let {
+            "${it.getRelativePath(get())}/${it.baseName}"
+        } ?: ""
+
+    actual fun String.receiveFileRelPath() =
+        fromUri(get(), this.toUri())?.let {
+            "${it.getRelativePath(get())}/${it.fullName}"
+        } ?: ""
+
+    actual fun formatFileSize(size: Long, prefFormat: BinaryPrefFormat): String {
+        if (size <= 0) return "0"
+
+        val locale = Locale.getDefault()
+        val numFormat = NumberFormat.getInstance(locale).apply {
+            maximumFractionDigits = 1
         }
-        var units = arrayOfNulls<String>(0)
-        if (numCountInfo == 1000) {
-            units = arrayOf("B", "KB", "MB", "GB", "TB")
-        } else if (numCountInfo == 1024) {
-            units = arrayOf("B", "KiB", "MiB", "GiB", "TiB")
-        }
-        val digitGroups = (log10(size.toDouble()) / log10(numCountInfo.toDouble())).toInt()
-        return (DecimalFormat("#,##0.#").format(
-            size / numCountInfo.toDouble().pow(digitGroups.toDouble())
-        ) + " " + units[digitGroups])
+        val fmt = MeasureFormat.getInstance(
+            locale,
+            MeasureFormat.FormatWidth.SHORT,
+            numFormat
+        )
+
+        val units = arrayOf(
+            MeasureUnit.BYTE,
+            MeasureUnit.KILOBYTE,
+            MeasureUnit.MEGABYTE,
+            MeasureUnit.GIGABYTE,
+            MeasureUnit.TERABYTE
+        )
+
+        val unitSize = if (prefFormat == BinaryPrefFormat.SI) 1000.0 else 1024.0
+        val digitGroups = (ln(size.toDouble()) / ln(unitSize)).toInt()
+            .coerceAtMost(units.lastIndex)
+
+        val value = size / unitSize.pow(digitGroups.toDouble())
+        return fmt.format(Measure(value, units[digitGroups]))
     }
 
     const val NOMEDIA_FILENAME: String = ".nomedia"
@@ -156,7 +184,9 @@ actual object FileUtil : KoinComponent {
             val isFolder = inArchive.getProperty(index, PropID.IS_FOLDER) as? Boolean ?: false
             val pathString = inArchive.getProperty(index, PropID.PATH) as? String ?: return null
 
-            if (isFolder) { return null }
+            if (isFolder) {
+                return null
+            }
 
             val file = targetDir.makeFile(
                 get(),

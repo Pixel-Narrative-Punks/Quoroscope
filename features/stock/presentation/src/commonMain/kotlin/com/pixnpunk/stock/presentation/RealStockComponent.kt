@@ -1,132 +1,130 @@
 package com.pixnpunk.stock.presentation
 
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.router.stack.ChildStack
-import com.arkivanov.decompose.router.stack.StackNavigation
-import com.arkivanov.decompose.router.stack.bringToFront
-import com.arkivanov.decompose.router.stack.childStack
-import com.arkivanov.decompose.value.Value
+import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
-import com.pixnpunk.addons.presentation.RealAddonsComponent
 import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.dto.GameListType
-import com.pixnpunk.news.presentation.RealNewsComponent
-import com.pixnpunk.stock.domain.usecase.FetchRemoteDescUseCase
-import com.pixnpunk.stock.presentation.StockComponent.Child
+import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.stock.domain.model.SearchState
+import com.pixnpunk.stock.domain.model.SearchToken
+import com.pixnpunk.stock.domain.model.SortBy
+import com.pixnpunk.stock.domain.usecase.GetAuthorSuggestionUseCase
+import com.pixnpunk.stock.domain.usecase.GetLocalGameEntriesUseCase
+import com.pixnpunk.stock.domain.usecase.GetRemoteGameEntriesExcludingLocalUseCase
+import com.pixnpunk.stock.domain.usecase.GetTranslatorSuggestionUseCase
 import com.pixnpunk.stock.presentation.mvi.RealStockStore
 import com.pixnpunk.stock.presentation.mvi.StockStore
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.serializer
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
+import org.koin.core.component.inject
 
 class RealStockComponent(
     private val componentContext: ComponentContext,
     override val showDialogAdd: () -> Unit,
-    val navigateToDetails: (GameEntry) -> Unit,
-    override val navigateToSettings: () -> Unit
+    override val navigateToSettings: () -> Unit,
+    override val navigateToDetails: (GameEntry) -> Unit,
+    override val settingsState: StateFlow<SettingsEntity>
 ) : ComponentContext by componentContext, StockComponent, KoinComponent {
 
-    private val sourceViewModel: SourceViewModel = get()
-    private val outScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val componentScope = coroutineScope()
 
-    private val contentNavigation = StackNavigation<ChildConfig>()
+    private val getLocalGameEntriesUseCase: GetLocalGameEntriesUseCase by inject()
+    private val getRemoteGameEntriesUseCase: GetRemoteGameEntriesExcludingLocalUseCase by inject()
+    private val getAuthorSuggestionUseCase: GetAuthorSuggestionUseCase by inject()
+    private val getTranslatorSuggestionUseCase: GetTranslatorSuggestionUseCase by inject()
 
     private val store = instanceKeeper.getStore {
         RealStockStore(DefaultStoreFactory()).create()
     }
 
-    init {
-        sourceViewModel.loadLocalData()
-        sourceViewModel.loadRemoteData()
-    }
-
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<StockStore.State> = store.stateFlow
-    override val gameRemotePageFlow: Flow<PagingData<GameEntry>> = sourceViewModel.remotePagingFlow
-    override val gameLocalPageFlow: Flow<PagingData<GameEntry>> = sourceViewModel.localPagingFlow
-    override val childStack: Value<ChildStack<*, Child>> =
-        childStack(
-            key = "contentChildStack",
-            source = contentNavigation,
-            serializer = serializer(),
-            initialConfiguration = ChildConfig.Stock,
-            handleBackButton = true,
-            childFactory = { config, ctx ->
-                when (config) {
-                    is ChildConfig.Stock -> {
-                        Child.StockChild()
-                    }
 
-                    is ChildConfig.Addons -> {
-                        Child.AddonsChild(
-                            RealAddonsComponent(ctx)
-                        )
-                    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val gameRemotePageFlow: Flow<PagingData<GameEntry>> =
+        store.stateFlow.flatMapLatest { state ->
+            getRemoteGameEntriesUseCase.execute(
+                SearchState(
+                    state.searchQuery,
+                    state.sortBy,
+                    state.sortOrder,
+                    state.selectedLang,
+                    state.activeTokens
+                )
+            )
+        }.cachedIn(componentScope)
 
-                    is ChildConfig.News -> {
-                        Child.NewsChild(
-                            RealNewsComponent(ctx)
-                        )
-                    }
-                }
-            }
-        )
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val gameLocalPageFlow: Flow<PagingData<GameEntry>> =
+        store.stateFlow.flatMapLatest { state ->
+            getLocalGameEntriesUseCase.execute(
+                SearchState(
+                    state.searchQuery,
+                    state.sortBy,
+                    state.sortOrder,
+                    state.selectedLang,
+                    state.activeTokens
+                )
+            )
+        }.cachedIn(componentScope)
 
-    override fun startDeleteMode() {
-        store.accept(StockStore.Intent.StartDeleteMode)
-    }
-
-    override fun stopDeleteMode() {
-        store.accept(StockStore.Intent.StopDeleteMode)
-    }
-
-    override fun deleteEntries(entries: Set<GameEntry>) {
-        store.accept(StockStore.Intent.DeleteEntries(entries))
-    }
-
-    override fun searchEntries(query: String) {
-        sourceViewModel.searchGameEntry(query)
-    }
-
-    override fun navigateToDetails(entry: GameEntry) {
-        if (entry.listId == GameListType.Playable) {
-            navigateToDetails.invoke(entry)
-        } else {
-            outScope.launch {
-                val desc = get<FetchRemoteDescUseCase>().execute(entry.descUrl)
-
-                withContext(Dispatchers.Main) {
-                    this@RealStockComponent.navigateToDetails.invoke(entry.copy(descUrl = desc))
-                }
-            }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val authorSuggestionsFlow: Flow<List<String>> =
+        store.stateFlow.map { it.searchQuery }.distinctUntilChanged().flatMapLatest { query ->
+            getAuthorSuggestionUseCase.execute(query).map { list -> list.map { it.name } }
         }
-    }
 
-    override fun navigateTo(config: ChildConfig) {
-        contentNavigation.bringToFront(config)
-    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val translatorSuggestionsFlow: Flow<List<String>> =
+        store.stateFlow.map { it.searchQuery }.distinctUntilChanged().flatMapLatest { query ->
+            getTranslatorSuggestionUseCase.execute(query).map { list -> list.map { it.name } }
+        }
 
-    @Serializable
-    sealed class ChildConfig {
-        @Serializable
-        data object Stock : ChildConfig()
+    override fun toggleGameSelection(gameId: Long) =
+        store.accept(StockStore.Intent.ToggleGameSelection(gameId))
 
-        @Serializable
-        data object Addons : ChildConfig()
+    override fun addAllGames(gameIds: Set<Long>) =
+        store.accept(StockStore.Intent.AddAllVisibleGames(gameIds))
 
-        @Serializable
-        data object News : ChildConfig()
-    }
+    override fun enterDeleteMode() =
+        store.accept(StockStore.Intent.EnterDeleteMode)
+
+    override fun exitDeleteMode() =
+        store.accept(StockStore.Intent.ExitDeleteMode)
+
+    override fun deleteEntries() =
+        store.accept(StockStore.Intent.DeleteSelectedGames)
+
+    override fun updateSearchQuery(query: String) =
+        store.accept(StockStore.Intent.UpdateQuery(query))
+
+    override fun changeSortOrder() =
+        store.accept(StockStore.Intent.ToggleSortOrder)
+
+    override fun changeSortBy(sortBy: SortBy) =
+        store.accept(StockStore.Intent.SelectSort(sortBy))
+
+    override fun changeSortLang(lang: String?) =
+        store.accept(StockStore.Intent.SelectLanguage(lang))
+
+    override fun toggleSearch(isExpanded: Boolean) =
+        store.accept(StockStore.Intent.ToggleSearch(isExpanded))
+
+    override fun executeSearch() =
+        store.accept(StockStore.Intent.ExecuteSearch)
+
+    override fun addToken(token: SearchToken) =
+        store.accept(StockStore.Intent.AddToken(token))
+
+    override fun removeToken(token: SearchToken) =
+        store.accept(StockStore.Intent.RemoveToken(token))
 }

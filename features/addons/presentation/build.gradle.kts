@@ -9,7 +9,7 @@ plugins {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.pixnpunk.addons.presentation"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -36,12 +36,10 @@ kotlin {
             implementation(project(":features:addons:data"))
             implementation(project(":features:addons:domain"))
 
-            implementation(libs.compose.runtime)
-            implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
-            implementation(libs.compose.ui)
-            implementation(libs.compose.ui.preview)
-            implementation(libs.compose.resources)
+            implementation(libs.compose.ui.tooling)
+            implementation(libs.compose.ui.tooling.preview)
+            implementation(libs.compose.components.resources)
 
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)

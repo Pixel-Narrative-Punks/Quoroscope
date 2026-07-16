@@ -10,16 +10,22 @@ sealed interface SettingsComponent {
     val onDismissed: () -> Unit
 
     val showColorDialog: (ColorPickerState) -> Unit
+    val resetToDefault: (ColorPickerState) -> Unit
     val showInputDialog: (InputState) -> Unit
+    val showFontDialog: () -> Unit
+
+    val isLocalSettings: Boolean
+
+    val gameTitle: String
 
     fun moveToChild(config: RealSettingsComponent.ChildConfig)
     fun backToRoot()
 
     sealed class Child {
-        class AudioChild() : Child()
-        class GeneralChild() : Child()
-        class PicturesChild() : Child()
-        class RootChild() : Child()
-        class TextChild() : Child()
+        class AudioChild : Child()
+        class GeneralChild : Child()
+        class PicturesChild : Child()
+        class RootChild : Child()
+        class TextChild : Child()
     }
 }

@@ -2,14 +2,19 @@ package com.pixnpunk.stock.domain.repository
 
 import androidx.paging.PagingData
 import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.dto.ProgressState
+import com.pixnpunk.stock.domain.model.AuthorEntry
+import com.pixnpunk.stock.domain.model.SearchState
+import com.pixnpunk.stock.domain.model.TranslatorEntry
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
 
 interface RemoteRepository {
-    val progressDownloadFlow: SharedFlow<ProgressState>
+    fun getGameEntriesPager(searchState: SearchState): Flow<PagingData<GameEntry>>
 
-    suspend fun fetchDescription(descUrl: String): String
-    suspend fun fetchRemoteSource(): Flow<PagingData<GameEntry>>
-    suspend fun downloadUnpackGame(downloadLink: String, destDirPath: String): Result<String>
+    fun getAuthorSuggestions(query: String): Flow<List<AuthorEntry>>
+
+    fun getTranslatorSuggestions(query: String): Flow<List<TranslatorEntry>>
+
+    suspend fun downloadGame(downloadEntry: GameEntry)
+
+    suspend fun syncDictionaries(): Result<Unit>
 }

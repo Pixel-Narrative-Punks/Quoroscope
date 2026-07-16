@@ -7,60 +7,73 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.Height
-import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.AnnotatedString
+import com.pixnpunk.dto.AppThemeMode
 import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.NativeLibAuthors
 import me.zhanghai.compose.preference.listPreference
 import me.zhanghai.compose.preference.switchPreference
+import org.jetbrains.compose.resources.stringResource
+import quoroscope.features.settings.presentation.generated.resources.Res
+import quoroscope.features.settings.presentation.generated.resources.count_action_list_title
+import quoroscope.features.settings.presentation.generated.resources.global_library_version_list_title
+import quoroscope.features.settings.presentation.generated.resources.immersive_switch_title
+import quoroscope.features.settings.presentation.generated.resources.local_library_version_list_title
+import quoroscope.features.settings.presentation.generated.resources.prefixes_list_title
+import quoroscope.features.settings.presentation.generated.resources.theme_list_title
 
 @Composable
 fun SettingsGeneralContent(
+    isLocalSettings: Boolean
 ) {
     LazyColumn {
-        listPreference(
-            key = "appThemePref",
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.DarkMode,
-                    contentDescription = null
-                )
-            },
-            defaultValue = "auto",
-            values = listOf("auto", "light", "dark"),
-            valueToText = {
-                AnnotatedString(
-                    it.replaceFirstChar { txt ->
-                        if (txt.isLowerCase()) txt.titlecase() else it
-                    }
-                )
-            },
-            title = { Text("Application theme") }
-        )
-        listPreference(
-            key = "appLangPref",
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Language,
-                    contentDescription = null
-                )
-            },
-            defaultValue = "en",
-            values = listOf("en", "ru"),
-            valueToText = {
-                AnnotatedString(
-                    when (it) {
-                        "en" -> "English"
-                        "ru" -> "Russian"
-                        else -> it
-                    }
-                )
-            },
-            title = { Text("Application language") }
-        )
+        if (!isLocalSettings) {
+            listPreference(
+                key = "appThemePref",
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.DarkMode,
+                        contentDescription = null
+                    )
+                },
+                defaultValue = AppThemeMode.SYSTEM.toString(),
+                values = AppThemeMode.entries.map { it.toString() },
+                valueToText = {
+                    AnnotatedString(
+                        when (AppThemeMode.valueOf(it)) {
+                            AppThemeMode.SYSTEM -> "System"
+                            AppThemeMode.LIGHT -> "Light"
+                            AppThemeMode.DARK -> "Dark"
+                        }
+                    )
+                },
+                title = { Text(stringResource(Res.string.theme_list_title)) }
+            )
+        }
+//        listPreference(
+//            key = "appLangPref",
+//            icon = {
+//                Icon(
+//                    imageVector = Icons.Default.Language,
+//                    contentDescription = null
+//                )
+//            },
+//            defaultValue = "en",
+//            values = listOf("en", "ru"),
+//            valueToText = {
+//                AnnotatedString(
+//                    when (it) {
+//                        "en" -> "English"
+//                        "ru" -> "Russian"
+//                        else -> it
+//                    }
+//                )
+//            },
+//            title = { Text("Application language") }
+//        )
         listPreference(
             key = "appLibVerPref",
             icon = {
@@ -75,12 +88,20 @@ fun SettingsGeneralContent(
                 AnnotatedString(
                     when (NativeLibAuthors.valueOf(it)) {
                         NativeLibAuthors.SEEDHARTHA -> "5.7.0 (by seedHarta)"
-                        NativeLibAuthors.SONNIX -> "5.8.0 (by Sonnix)"
-                        NativeLibAuthors.BYTE -> "5.9.3 (by Byte)"
+                        NativeLibAuthors.SONNIX -> "5.7.9 (by Sonnix)"
+                        NativeLibAuthors.BYTE -> "5.9.5 (by Byte)"
                     }
                 )
             },
-            title = { Text("Application library version") }
+            title = {
+                Text(
+                    if (isLocalSettings) {
+                        stringResource(Res.string.local_library_version_list_title)
+                    } else {
+                        stringResource(Res.string.global_library_version_list_title)
+                    }
+                )
+            }
         )
         listPreference(
             key = "appBinPref",
@@ -100,7 +121,7 @@ fun SettingsGeneralContent(
                     }
                 )
             },
-            title = { Text("Byte prefixes") }
+            title = { Text(stringResource(Res.string.prefixes_list_title)) }
         )
         listPreference(
             key = "countActsPref",
@@ -112,7 +133,7 @@ fun SettingsGeneralContent(
             },
             defaultValue = 3,
             values = listOf(3, 4, 5, 6),
-            title = { Text("Count visible action") }
+            title = { Text(stringResource(Res.string.count_action_list_title)) }
         )
         switchPreference(
             key = "appImmersiveModePref",
@@ -123,7 +144,7 @@ fun SettingsGeneralContent(
                 )
             },
             defaultValue = true,
-            title = { Text("Immersive mode") }
+            title = { Text(stringResource(Res.string.immersive_switch_title)) }
         )
     }
 }

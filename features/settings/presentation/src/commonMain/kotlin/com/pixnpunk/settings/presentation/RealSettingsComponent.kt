@@ -7,27 +7,45 @@ import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
+import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.settings.domain.usecase.GetSettingsUseCase
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.koin.java.KoinJavaComponent.inject
+import kotlin.getValue
 
 class RealSettingsComponent(
     private val componentContext: ComponentContext,
+    gameId: Long? = null,
+    override val gameTitle: String = "",
     override val showColorDialog: (ColorPickerState) -> Unit,
+    override val resetToDefault: (ColorPickerState) -> Unit,
     override val showInputDialog: (InputState) -> Unit,
+    override val showFontDialog: () -> Unit,
     override val onDismissed: () -> Unit
 ) : ComponentContext by componentContext, SettingsComponent, KoinComponent {
 
+    override val isLocalSettings: Boolean = gameId != null
+
     private val navigation = StackNavigation<ChildConfig>()
 
-    override fun moveToChild(config: ChildConfig) {
-        navigation.pushNew(config)
-    }
+    private val getSettingsUseCase: GetSettingsUseCase by inject()
 
-    override fun backToRoot() {
-        navigation.pop()
-    }
+    private val settingsState = getSettingsUseCase().stateIn(
+        scope = coroutineScope(),
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = SettingsEntity()
+    )
+
+    override fun moveToChild(config: ChildConfig) = navigation.pushNew(config)
+
+    override fun backToRoot() = navigation.pop()
 
     override val childStack: Value<ChildStack<*, SettingsComponent.Child>> =
         childStack(
@@ -35,27 +53,17 @@ class RealSettingsComponent(
             serializer = null,
             initialConfiguration = ChildConfig.Root,
             handleBackButton = true,
-            childFactory = { config, ctx ->
+            childFactory = { config, _ ->
                 when (config) {
-                    is ChildConfig.Audio -> {
-                        SettingsComponent.Child.AudioChild()
-                    }
+                    is ChildConfig.Audio -> SettingsComponent.Child.AudioChild()
 
-                    is ChildConfig.General -> {
-                        SettingsComponent.Child.GeneralChild()
-                    }
+                    is ChildConfig.General -> SettingsComponent.Child.GeneralChild()
 
-                    is ChildConfig.Pictures -> {
-                        SettingsComponent.Child.PicturesChild()
-                    }
+                    is ChildConfig.Pictures -> SettingsComponent.Child.PicturesChild()
 
-                    is ChildConfig.Root -> {
-                        SettingsComponent.Child.RootChild()
-                    }
+                    is ChildConfig.Root -> SettingsComponent.Child.RootChild()
 
-                    is ChildConfig.Text -> {
-                        SettingsComponent.Child.TextChild()
-                    }
+                    is ChildConfig.Text -> SettingsComponent.Child.TextChild()
                 }
             }
         )

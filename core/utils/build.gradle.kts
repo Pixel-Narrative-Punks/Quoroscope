@@ -9,7 +9,7 @@ plugins {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.pixnpunk.utils"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -36,8 +36,6 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(project(":core:dto"))
-
-            implementation(libs.compose.material3.windowSizeClass)
 
             implementation(libs.androidx.lifecycle.viewmodelCompose)
 

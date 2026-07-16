@@ -18,6 +18,24 @@ class RealStockStore(
             reducer = { message ->
                 when (message) {
                     is StockStore.Message.ChangeStateDeleteMode -> copy(isDeleteModeActive = message.newState)
+
+                    is StockStore.Message.SelectionUpdated -> copy(selectedGameIds = message.newIds)
+
+                    is StockStore.Message.ClearSelection -> copy(selectedGameIds = emptySet())
+
+                    is StockStore.Message.ChangeSortOrder -> copy(sortOrder = message.newOrder)
+
+                    is StockStore.Message.ChangeSortBy -> copy(sortBy = message.newSort)
+
+                    is StockStore.Message.ChangeSortLang -> copy(selectedLang = message.newLang)
+
+                    is StockStore.Message.ChangeStateSearch -> copy(isSearchExpanded = message.newState)
+
+                    is StockStore.Message.UpdateSearchQuery -> copy(searchQuery = message.newQuery)
+
+                    is StockStore.Message.UpdateActiveTokens -> copy(activeTokens = message.newTokens)
+
+                    is StockStore.Message.UpdateRecentSearches -> copy(recentSearches = message.newSearches)
                 }
             }
         )

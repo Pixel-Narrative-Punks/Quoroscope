@@ -7,8 +7,8 @@ import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.pixnpunk.addons.presentation.di.featureAddonsModule
 import com.pixnpunk.database.di.databaseModule
 import com.pixnpunk.network.networkModule
+import com.pixnpunk.settings.presentation.di.featureSettingsModule
 import com.pixnpunk.stock.presentation.di.featureStockModules
-import com.pixnpunk.utils.settingsModule
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
@@ -27,7 +27,8 @@ private lateinit var root: RealRootComponent
 
 fun main() {
     val application = startKoin {
-        modules(databaseModule, networkModule, settingsModule)
+        modules(databaseModule, networkModule)
+        modules(featureSettingsModule)
         modules(featureStockModules)
         modules(featureAddonsModule)
     }
@@ -69,6 +70,7 @@ fun main() {
                 }
             },
             launchStorageAccess = {},
+            launchFontPicker = {},
             launchEngineIntent = {
 
             }
@@ -80,7 +82,7 @@ fun main() {
             onCloseRequest = ::exitApplication,
             title = "Quoroscope",
         ) {
-            RootContent(root, application.koin.get())
+            RootContent(root)
         }
     }
 }

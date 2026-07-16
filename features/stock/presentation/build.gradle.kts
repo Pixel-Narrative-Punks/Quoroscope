@@ -9,7 +9,7 @@ plugins {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.pixnpunk.stock.presentation"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -44,16 +44,13 @@ kotlin {
             implementation(project(":features:addons:presentation"))
             implementation(project(":features:news:presentation"))
 
-            implementation(libs.compose.runtime)
-            implementation(libs.compose.foundation)
+            implementation(libs.compose.adaptive)
             implementation(libs.compose.material3)
-            implementation(libs.compose.material3.adaptive.nav)
-            implementation(libs.compose.material3.windowSizeClass)
+            implementation(libs.compose.material3.adaptive.navigation.suite)
+            implementation(libs.compose.ui.tooling)
+            implementation(libs.compose.ui.tooling.preview)
+            implementation(libs.compose.components.resources)
             implementation(libs.compose.icons.ext)
-            implementation(libs.compose.ui)
-            implementation(libs.compose.ui.util)
-            implementation(libs.compose.ui.preview)
-            implementation(libs.compose.resources)
 
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
@@ -70,12 +67,15 @@ kotlin {
             implementation(libs.coil.network.ktor3)
 
             implementation(libs.essenty.lifecycle)
+            implementation(libs.essenty.coroutines)
             implementation(libs.decompose.core)
             implementation(libs.decompose.ext)
             implementation(libs.decompose.ext.exp)
             implementation(libs.mvikotlin.core)
             implementation(libs.mvikotlin.main)
             implementation(libs.mvikotlin.coro.ext)
+
+            implementation(libs.prettytime)
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)

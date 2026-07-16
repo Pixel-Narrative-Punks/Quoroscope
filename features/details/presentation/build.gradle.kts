@@ -9,7 +9,7 @@ plugins {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.pixnpunk.details.presentation"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -34,21 +34,22 @@ kotlin {
             implementation(project(":core:dto"))
             implementation(project(":core:utils"))
 
-            implementation(libs.compose.runtime)
-            implementation(libs.compose.foundation)
+            implementation(project(":features:stock:domain"))
+
+            implementation(libs.compose.adaptive)
             implementation(libs.compose.material3)
+            implementation(libs.compose.ui.tooling)
+            implementation(libs.compose.ui.tooling.preview)
+            implementation(libs.compose.components.resources)
             implementation(libs.compose.icons.ext)
-            implementation(libs.compose.ui)
-            implementation(libs.compose.ui.preview)
-            implementation(libs.compose.resources)
 
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
+
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
-
-            implementation(libs.prettytime)
 
             implementation(libs.htmlconverter)
 
@@ -61,6 +62,8 @@ kotlin {
             implementation(libs.mvikotlin.core)
             implementation(libs.mvikotlin.main)
             implementation(libs.mvikotlin.coro.ext)
+
+            implementation("nl.jacobras:Human-Readable:1.13.0")
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)

@@ -12,9 +12,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.pixnpunk.settings.presentation.RealSettingsComponent
 import me.zhanghai.compose.preference.preference
+import org.jetbrains.compose.resources.stringResource
+import quoroscope.features.settings.presentation.generated.resources.Res
+import quoroscope.features.settings.presentation.generated.resources.about_button_title
+import quoroscope.features.settings.presentation.generated.resources.audio_button_title
+import quoroscope.features.settings.presentation.generated.resources.general_button_title
+import quoroscope.features.settings.presentation.generated.resources.pictures_button_title
+import quoroscope.features.settings.presentation.generated.resources.text_button_title
 
 @Composable
 fun SettingsRootContent(
+    isLocalSettings: Boolean,
     moveToChild: (RealSettingsComponent.ChildConfig) -> Unit
 ) {
     LazyColumn {
@@ -26,7 +34,7 @@ fun SettingsRootContent(
                     contentDescription = null
                 )
             },
-            title = { Text("Basic") },
+            title = { Text(stringResource(Res.string.general_button_title)) },
             onClick = { moveToChild(RealSettingsComponent.ChildConfig.General) }
         )
         preference(
@@ -37,7 +45,7 @@ fun SettingsRootContent(
                     contentDescription = null
                 )
             },
-            title = { Text("Text") },
+            title = { Text(stringResource(Res.string.text_button_title)) },
             onClick = { moveToChild(RealSettingsComponent.ChildConfig.Text) }
         )
         preference(
@@ -48,7 +56,7 @@ fun SettingsRootContent(
                     contentDescription = null
                 )
             },
-            title = { Text("Pictures") },
+            title = { Text(stringResource(Res.string.pictures_button_title)) },
             onClick = { moveToChild(RealSettingsComponent.ChildConfig.Pictures) }
         )
         preference(
@@ -59,19 +67,21 @@ fun SettingsRootContent(
                     contentDescription = null
                 )
             },
-            title = { Text("Audio") },
+            title = { Text(stringResource(Res.string.audio_button_title)) },
             onClick = { moveToChild(RealSettingsComponent.ChildConfig.Audio) }
         )
-        preference(
-            key = "aboutPref",
-            icon = {
-                Icon(
-                    imageVector = Icons.Filled.Info,
-                    contentDescription = null
-                )
-            },
-            title = { Text("About app") },
-            onClick = {}
-        )
+        if (!isLocalSettings) {
+            preference(
+                key = "aboutPref",
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.Info,
+                        contentDescription = null
+                    )
+                },
+                title = { Text(stringResource(Res.string.about_button_title)) },
+                onClick = {}
+            )
+        }
     }
 }

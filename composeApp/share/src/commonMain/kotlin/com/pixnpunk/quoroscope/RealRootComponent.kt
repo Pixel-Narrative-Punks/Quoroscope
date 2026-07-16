@@ -1,15 +1,7 @@
 package com.pixnpunk.quoroscope
 
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.router.panels.ChildPanels
-import com.arkivanov.decompose.router.panels.Panels
-import com.arkivanov.decompose.router.panels.PanelsNavigation
-import com.arkivanov.decompose.router.panels.activateDetails
-import com.arkivanov.decompose.router.panels.activateExtra
-import com.arkivanov.decompose.router.panels.childPanels
-import com.arkivanov.decompose.router.panels.dismissDetails
-import com.arkivanov.decompose.router.panels.dismissExtra
+import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
@@ -17,49 +9,60 @@ import com.arkivanov.decompose.router.slot.child
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
-import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
-import com.pixnpunk.details.presentation.DetailsComponent
 import com.pixnpunk.details.presentation.RealDetailsComponent
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dialogs.presentation.DialogsConfig
 import com.pixnpunk.dialogs.presentation.DialogsState
 import com.pixnpunk.dialogs.presentation.RealDialogsComponent
+import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.OutputState
+import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.quoroscope.mvi.RealRootStore
 import com.pixnpunk.quoroscope.mvi.RootStore
+import com.pixnpunk.settings.domain.usecase.GetSettingsUseCase
 import com.pixnpunk.settings.presentation.RealSettingsComponent
-import com.pixnpunk.settings.presentation.SettingsComponent
 import com.pixnpunk.stock.presentation.RealStockComponent
-import com.pixnpunk.stock.presentation.StockComponent
-import com.pixnpunk.utils.AddonsUtils
-import kotlinx.coroutines.flow.Flow
-import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import java.io.File
 
 class RealRootComponent(
     private val componentContext: ComponentContext,
     private val launchDirPicker: () -> Unit,
-    private val launchFilesPicker: () -> Unit,
     private val launchFilePicker: () -> Unit,
+    private val launchFilesPicker: () -> Unit,
+    private val launchFontPicker: () -> Unit,
     private val launchStorageAccess: () -> Unit,
     private val launchEngineIntent: (Pair<GameEntry, Int>) -> Unit,
 ) : ComponentContext by componentContext, RootComponent, KoinComponent {
 
+    private val componentScope = coroutineScope()
+
     private val dialogsNavigation = SlotNavigation<DialogsConfig>()
+    private val detailsNavigation = SlotNavigation<DetailsConfig>()
+    private val settingsNavigation = SlotNavigation<SettingsConfig>()
 
-    @OptIn(ExperimentalDecomposeApi::class)
-    private val panelNavigation = PanelsNavigation<Unit, DetailsConfig, Unit>()
-    private val store = instanceKeeper.getStore {
-        RealRootStore(DefaultStoreFactory()).create()
-    }
+    private val getSettingsUseCase: GetSettingsUseCase by inject()
 
-    override val label: Flow<RootStore.Label> = store.labels
+    override val settingsState = getSettingsUseCase().stateIn(
+        scope = coroutineScope(),
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = SettingsEntity()
+    )
+
+    private val store =
+        instanceKeeper.getStore {
+            RealRootStore(storeFactory = DefaultStoreFactory()).create()
+        }
 
     fun processPickedDir(dirName: String, dirPath: String) {
         val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
@@ -84,19 +87,6 @@ class RealRootComponent(
         }
     }
 
-    fun processPickedFiles(filePaths: List<String>) {
-        val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
-        if (oldConfig != null) {
-            dialogsNavigation.activate(
-                oldConfig.copy(
-                    unfilledEntry = oldConfig.unfilledEntry.copy(
-                        gameFilesPath = filePaths
-                    )
-                )
-            )
-        }
-    }
-
     fun processPickedFile(filePath: String) {
         val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
         if (oldConfig != null) {
@@ -110,36 +100,40 @@ class RealRootComponent(
         }
     }
 
-    fun showMessageDialog(
-        message: String,
-        outputState: OutputState
-    ) {
-        dialogsNavigation.activate(
-            DialogsConfig(
-                dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
-                outputValue = message,
-                outputState = outputState
-            )
+    fun processPickedFont(fontPath: String) {
+        val oldCustomFontPath = settingsState.value.customFontPath
+
+        if (oldCustomFontPath.isNotEmpty() && oldCustomFontPath != fontPath) {
+            val oldFile = File(oldCustomFontPath)
+            if (oldFile.exists()) { oldFile.delete() }
+        }
+
+        store.accept(
+            RootStore.Intent.UpdateCustomFontPath(fontPath)
         )
     }
 
-    private fun selGameDialog(entry: GameEntry) {
-        if (!AddonsUtils.receiveEngineAddons()) {
+    fun processPickedFiles(filePaths: List<String>) {
+        val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
+        if (oldConfig != null) {
+            val oldEntry = oldConfig.unfilledEntry
+            val newFilesPath = oldEntry.gameFilesPath.plus(filePaths)
             dialogsNavigation.activate(
-                DialogsConfig(
-                    dialogsState = DialogsState.DIALOG_ERROR_ADDONS
+                oldConfig.copy(
+                    unfilledEntry = oldEntry.copy(
+                        gameFilesPath = newFilesPath
+                    )
                 )
             )
-            return
         }
+    }
 
+    private fun selGameDialog(entry: GameEntry) {
         when (entry.gameFilesPath.size) {
             0 -> {
-                dialogsNavigation.activate(
-                    DialogsConfig(
-                        dialogsState = DialogsState.DIALOG_ERROR_GAME,
-                        unfilledEntry = entry
-                    )
+                doShowDialog(
+                    outputValue = "The game files for the ${entry.title} are missing!",
+                    outputState = OutputState.OUTPUT_SIMPLE_MSG
                 )
             }
 
@@ -169,29 +163,108 @@ class RealRootComponent(
                 dialogsConfig = config,
                 addNewEntry = { store.accept(RootStore.Intent.AddNewGame(it)) },
                 editEntry = { store.accept(RootStore.Intent.EditGame(it)) },
-                downloadNewEntry = { store.accept(RootStore.Intent.DownloadNewGame(it)) },
+                downloadNewEntry = { entry ->
+                    detailsNavigation.dismiss {
+                        store.accept(RootStore.Intent.DownloadNewGame(entry))
+                    }
+                },
                 selectFolder = launchDirPicker,
-                deselectDir = { remFolderSelect() },
-                selectFiles = launchFilesPicker,
+                deselectDir = ::remDirSelect,
                 selectFile = launchFilePicker,
-                deselectFile = { remFileSelect(it) },
+                selectFiles = launchFilesPicker,
+                deselectFile = ::remFileSelect,
                 selectColor = {
                     store.accept(RootStore.Intent.UpdateColorConfig(it.first, it.second))
                 },
                 confirmMessage = {
-                    when (it) {
+                    when (it.state) {
                         OutputState.OUTPUT_REQUEST_PERM -> launchStorageAccess()
+                        else -> {}
                     }
                 },
                 inputValue = {
                     store.accept(RootStore.Intent.UpdateImageConfig(it.first, it.second))
                 },
                 doPlayGame = { entry, value -> launchEngineIntent(entry to value) },
-                onDismissed = dialogsNavigation::dismiss
+                onDismissed = dialogsNavigation::dismiss,
             )
         }
 
-    private fun remFolderSelect() {
+    override val detailsSlot =
+        childSlot(
+            source = detailsNavigation,
+            key = "DetailsChildSlot",
+            serializer = serializer(),
+            handleBackButton = true
+        ) { config, ctx ->
+            RealDetailsComponent(
+                componentContext = ctx,
+                defEntry = config.entry,
+                settingsState = settingsState,
+                showSelectGameDialog = {
+                    doShowDialog(
+                        state = DialogsState.DIALOG_SELECT_RUN_GAME,
+                        entry = it
+                    )
+                },
+                showEditGameDialog = {
+                    doShowDialog(
+                        state = DialogsState.DIALOG_EDIT_GAME,
+                        entry = it
+                    )
+                },
+                showSettingsGamePanel = {
+                    settingsNavigation.activate(
+                        SettingsConfig(
+                            it.id,
+                            it.title
+                        )
+                    )
+                },
+                showDownloadGameDialog = {
+                    doShowDialog(
+                        state = DialogsState.DIALOG_DOWNLOAD_GAME,
+                        entry = it
+                    )
+                },
+                onDismissed = { detailsNavigation.dismiss() },
+            )
+        }
+
+    override val settingsSlot =
+        childSlot(
+            source = settingsNavigation,
+            key = "SettingsChildSlot",
+            serializer = serializer(),
+            handleBackButton = true
+        ) { config, ctx ->
+            RealSettingsComponent(
+                componentContext = ctx,
+                gameId = config.gameId,
+                gameTitle = config.gameTitle,
+                showColorDialog = ::doShowDialog,
+                resetToDefault = { store.accept(RootStore.Intent.RestoreColorConfig(state = it)) },
+                showInputDialog = ::doShowDialog,
+                showFontDialog = launchFontPicker,
+                onDismissed = { settingsNavigation.dismiss() }
+            )
+        }
+
+    override val stockComponent = RealStockComponent(
+        componentContext = childContext(key = "StockComponent"),
+        showDialogAdd = ::doShowDialog,
+        navigateToSettings = {
+            settingsNavigation.activate(
+                SettingsConfig(null, "")
+            )
+        },
+        navigateToDetails = {
+            detailsNavigation.activate(DetailsConfig(it))
+        },
+        settingsState = settingsState
+    )
+
+    private fun remDirSelect() {
         val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
         if (oldConfig != null) {
             dialogsNavigation.activate(
@@ -231,83 +304,77 @@ class RealRootComponent(
         }
     }
 
-    @OptIn(ExperimentalDecomposeApi::class, ExperimentalSerializationApi::class)
-    override val childPanel: Value<ChildPanels<*, StockComponent, *, DetailsComponent, *, SettingsComponent>> =
-        childPanels(
-            source = panelNavigation,
-            serializers = Triple(
-                Unit.serializer(),
-                DetailsConfig.serializer(),
-                Unit.serializer()
-            ),
-            initialPanels = { Panels(main = Unit) },
-            handleBackButton = true,
-            extraFactory = { _, ctx ->
-                RealSettingsComponent(
-                    componentContext = ctx,
-                    showColorDialog = {
-                        dialogsNavigation.activate(
-                            DialogsConfig(
-                                dialogsState = DialogsState.DIALOG_SELECT_COLOR,
-                                colorPickerState = it
-                            )
-                        )
-                    },
-                    showInputDialog = {
-                        dialogsNavigation.activate(
-                            DialogsConfig(
-                                dialogsState = DialogsState.DIALOG_INPUT_VALUE,
-                                inputState = it
-                            )
-                        )
-                    },
-                    onDismissed = panelNavigation::dismissExtra
-                )
-            },
-            mainFactory = { _, ctx ->
-                RealStockComponent(
-                    componentContext = ctx,
-                    showDialogAdd = {
-                        dialogsNavigation.activate(
-                            DialogsConfig(
-                                dialogsState = DialogsState.DIALOG_ADD_GAME
-                            )
-                        )
-                    },
-                    navigateToDetails = { entryShow ->
-                        panelNavigation.activateDetails(details = DetailsConfig(entryShow))
-                    },
-                    navigateToSettings = {
-                        panelNavigation.activateExtra(Unit)
-                    }
-                )
-            },
-            detailsFactory = { cfg, ctx ->
-                RealDetailsComponent(
-                    componentContext = ctx,
-                    entryShow = cfg.entryShow,
-                    showSelectGameDialog = { selGameDialog(it) },
-                    showEditGameDialog = {
-                        dialogsNavigation.activate(
-                            DialogsConfig(
-                                dialogsState = DialogsState.DIALOG_EDIT_GAME,
-                                unfilledEntry = it
-                            )
-                        )
-                    },
-                    showDownloadGameDialog = {
-                        dialogsNavigation.activate(
-                            DialogsConfig(
-                                dialogsState = DialogsState.DIALOG_DOWNLOAD_GAME,
-                                unfilledEntry = it
-                            )
-                        )
-                    },
-                    onDismissed = panelNavigation::dismissDetails
+    override fun doShowDialog() =
+        dialogsNavigation.activate(
+            DialogsConfig(
+                dialogsState = DialogsState.DIALOG_ADD_GAME
+            )
+        )
+
+    override fun doShowDialog(
+        state: DialogsState,
+        entry: GameEntry
+    ) {
+        when (state) {
+            DialogsState.DIALOG_SELECT_RUN_GAME -> selGameDialog(entry)
+
+            DialogsState.DIALOG_DOWNLOAD_GAME -> {
+                dialogsNavigation.activate(
+                    DialogsConfig(
+                        dialogsState = state,
+                        unfilledEntry = entry
+                    )
                 )
             }
+
+            DialogsState.DIALOG_EDIT_GAME -> {
+                dialogsNavigation.activate(
+                    DialogsConfig(
+                        dialogsState = state,
+                        unfilledEntry = entry
+                    )
+                )
+            }
+
+            else -> TODO("ERROR STATE!")
+        }
+    }
+
+    override fun doShowDialog(
+        pickerState: ColorPickerState
+    ) =
+        dialogsNavigation.activate(
+            DialogsConfig(
+                dialogsState = DialogsState.DIALOG_SELECT_COLOR,
+                colorPickerState = pickerState
+            )
+        )
+
+    override fun doShowDialog(
+        inputState: InputState
+    ) =
+        dialogsNavigation.activate(
+            DialogsConfig(
+                dialogsState = DialogsState.DIALOG_INPUT_VALUE,
+                inputState = inputState
+            )
+        )
+
+    override fun doShowDialog(
+        outputValue: String,
+        outputState: OutputState
+    ) =
+        dialogsNavigation.activate(
+            DialogsConfig(
+                dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
+                outputValue = outputValue,
+                outputState = outputState
+            )
         )
 
     @Serializable
-    private data class DetailsConfig(val entryShow: GameEntry)
+    data class SettingsConfig(val gameId: Long?, val gameTitle: String)
+
+    @Serializable
+    data class DetailsConfig(val entry: GameEntry)
 }

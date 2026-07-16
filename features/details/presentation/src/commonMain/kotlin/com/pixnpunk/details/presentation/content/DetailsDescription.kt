@@ -1,14 +1,19 @@
 package com.pixnpunk.details.presentation.content
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -24,9 +29,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import be.digitalia.compose.htmlconverter.htmlToAnnotatedString
+import org.jetbrains.compose.resources.stringResource
+import quoroscope.features.details.presentation.generated.resources.Res
+import quoroscope.features.details.presentation.generated.resources.collapse_button_description
+import quoroscope.features.details.presentation.generated.resources.description_title
+import quoroscope.features.details.presentation.generated.resources.expand_button_description
 
 @Composable
 fun DetailsDescription(
@@ -36,16 +48,14 @@ fun DetailsDescription(
         modifier = Modifier.padding(4.dp)
     ) {
         var isExpanded by remember { mutableStateOf(false) }
-        var isOverflowed by remember { mutableStateOf(false) }
+        var isExpandable by remember { mutableStateOf(false) }
 
-        val parsedDescription = remember(descriptionHtml) {
+        val text = remember(descriptionHtml) {
             htmlToAnnotatedString(descriptionHtml)
         }
 
         Column(
-            modifier = Modifier
-                .animateContentSize()
-                .padding(8.dp),
+            modifier = Modifier.padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
@@ -53,13 +63,13 @@ fun DetailsDescription(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Description",
+                    text = stringResource(Res.string.description_title),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f)
                 )
 
                 AnimatedVisibility(
-                    visible = isOverflowed xor isExpanded
+                    visible = isExpandable
                 ) {
                     IconButton(
                         onClick = { isExpanded = !isExpanded }
@@ -69,21 +79,52 @@ fun DetailsDescription(
                                 if (isExpanded) Icons.Default.KeyboardArrowUp
                                 else Icons.Default.KeyboardArrowDown,
                             contentDescription =
-                                if (isExpanded) { "Collapse" } else { "Expand" }
+                                if (isExpanded) stringResource(Res.string.collapse_button_description)
+                                else stringResource(Res.string.expand_button_description)
                         )
                     }
                 }
             }
 
-            Text(
-                modifier = if (isExpanded) { Modifier.verticalScroll(rememberScrollState()) } else { Modifier },
-                text = parsedDescription,
-                maxLines = if (isExpanded) Int.MAX_VALUE else 3,
-                overflow = if (isExpanded) TextOverflow.Clip else TextOverflow.Ellipsis,
-                onTextLayout = { textLayoutResult ->
-                    isOverflowed = textLayoutResult.hasVisualOverflow
-                }
-            )
+            AnimatedContent(
+                targetState = isExpanded,
+                transitionSpec = {
+                    val duration = 600
+                    if (targetState) {
+                        fadeIn(animationSpec = snap()) togetherWith
+                                fadeOut(animationSpec = snap()) using
+                                SizeTransform { _, _ ->
+                                    tween(
+                                        duration,
+                                        easing = FastOutSlowInEasing
+                                    )
+                                }
+                    } else {
+                        fadeIn(animationSpec = snap(delayMillis = duration)) togetherWith
+                                fadeOut(animationSpec = snap(delayMillis = duration)) using
+                                SizeTransform { _, _ ->
+                                    tween(
+                                        duration,
+                                        easing = FastOutSlowInEasing
+                                    )
+                                }
+                    }
+                },
+                contentAlignment = Alignment.TopStart,
+                label = "text_expansion_animation"
+            ) { targetExpanded ->
+                Text(
+                    modifier = Modifier.clearAndSetSemantics { contentDescription = text.text },
+                    text = text,
+                    maxLines = if (targetExpanded) Int.MAX_VALUE else 3,
+                    overflow = if (targetExpanded) TextOverflow.Clip else TextOverflow.Ellipsis,
+                    onTextLayout = { textLayoutResult ->
+                        if (!targetExpanded) {
+                            isExpandable = textLayoutResult.hasVisualOverflow
+                        }
+                    }
+                )
+            }
         }
     }
 }

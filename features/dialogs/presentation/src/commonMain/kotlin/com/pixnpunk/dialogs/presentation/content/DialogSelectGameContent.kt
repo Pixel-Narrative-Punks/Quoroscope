@@ -19,7 +19,11 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.dialogs.presentation.DialogsComponent
-import com.pixnpunk.utils.FileUtil.receiveRelPath
+import com.pixnpunk.utils.FileUtil.receiveFullName
+import org.jetbrains.compose.resources.stringResource
+import quoroscope.features.dialogs.presentation.generated.resources.Res
+import quoroscope.features.dialogs.presentation.generated.resources.cancel_button_description
+import quoroscope.features.dialogs.presentation.generated.resources.file_run_title
 
 @Composable
 fun DialogSelectGameContent(
@@ -32,7 +36,7 @@ fun DialogSelectGameContent(
             modifier = Modifier
                 .align(CenterHorizontally)
                 .padding(bottom = 16.dp),
-            text = "Select a game file to run",
+            text = stringResource(Res.string.file_run_title),
             style = MaterialTheme.typography.headlineSmall
         )
         LazyColumn(
@@ -46,9 +50,9 @@ fun DialogSelectGameContent(
                         .padding(vertical = 8.dp)
                         .clickable {
                             component.doPlayGame(entry, index)
-                            component.onDismissed()
+                            component.onDismissed
                         },
-                    headlineContent = { Text(text = item.receiveRelPath()) }
+                    headlineContent = { Text(text = item.receiveFullName()) }
                 )
             }
         }
@@ -58,7 +62,7 @@ fun DialogSelectGameContent(
             horizontalArrangement = Arrangement.End
         ) {
             TextButton(onClick = component.onDismissed) {
-                Text("Dismiss")
+                Text(stringResource(Res.string.cancel_button_description))
             }
         }
     }

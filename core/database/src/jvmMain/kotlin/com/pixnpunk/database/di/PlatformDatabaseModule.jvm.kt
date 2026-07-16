@@ -9,11 +9,13 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import java.io.File
 
-internal actual fun platformDatabaseModule(): Module =
-    module(createdAtStart = true) {
-        single<AppDatabase> {
-            Room.databaseBuilder<AppDatabase>(
-                name = File(System.getProperty("java.io.tmpdir"), DB_FILE_NAME).absolutePath
-            ).setDriver(BundledSQLiteDriver()).setQueryCoroutineContext(Dispatchers.IO).build()
-        }
+internal actual fun platformDatabaseModule(): Module = module(createdAtStart = true) {
+    single<AppDatabase> {
+        Room.databaseBuilder<AppDatabase>(
+            name = File(System.getProperty("java.io.tmpdir"), DB_FILE_NAME).absolutePath
+        )
+            .fallbackToDestructiveMigration(false)
+            .setDriver(BundledSQLiteDriver())
+            .setQueryCoroutineContext(Dispatchers.IO).build()
     }
+}

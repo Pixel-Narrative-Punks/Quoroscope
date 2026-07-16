@@ -1,7 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
 }
@@ -67,16 +66,12 @@ dependencies {
     implementation(project(":features:settings:presentation"))
     implementation(project(":features:stock:presentation"))
 
-    implementation(libs.compose.runtime)
-    implementation(libs.compose.foundation)
     implementation(libs.compose.material3)
     implementation(libs.compose.icons.ext)
-    implementation(libs.compose.resources)
-    implementation(libs.compose.ui)
-    implementation(libs.compose.ui.util)
-    implementation(libs.compose.ui.preview)
-    debugImplementation(libs.compose.ui.tooling)
-    implementation(libs.compose.material3.windowSizeClass)
+    implementation(libs.compose.ui.tooling)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.compose.components.resources)
+
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.androidx.lifecycle.runtimeCompose)
 

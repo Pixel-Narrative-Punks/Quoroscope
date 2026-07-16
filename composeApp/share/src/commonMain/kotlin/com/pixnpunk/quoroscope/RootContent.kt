@@ -1,100 +1,134 @@
 package com.pixnpunk.quoroscope
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldDefaults
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
+import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldDestinationItem
+import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldValue
+import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
+import androidx.compose.material3.adaptive.layout.calculateThreePaneScaffoldValue
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.extensions.compose.experimental.panels.ChildPanels
-import com.arkivanov.decompose.extensions.compose.experimental.panels.ChildPanelsAnimators
-import com.arkivanov.decompose.extensions.compose.experimental.stack.animation.fade
-import com.arkivanov.decompose.extensions.compose.experimental.stack.animation.plus
-import com.arkivanov.decompose.extensions.compose.experimental.stack.animation.scale
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.pixnpunk.details.presentation.DetailsContent
 import com.pixnpunk.dialogs.presentation.DialogsMainContent
-import com.pixnpunk.dto.ColorPickerState
-import com.pixnpunk.dto.InputState
-import com.pixnpunk.quoroscope.mvi.RootStore
 import com.pixnpunk.quoroscope.theme.QuoroscopeTheme
 import com.pixnpunk.settings.presentation.SettingsContent
 import com.pixnpunk.stock.presentation.StockContent
-import com.pixnpunk.utils.SettingsRepository
-import me.zhanghai.compose.preference.LocalPreferenceFlow
-import me.zhanghai.compose.preference.ProvidePreferenceLocals
 
-@OptIn(ExperimentalDecomposeApi::class)
+@OptIn(ExperimentalDecomposeApi::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun RootContent(
-    component: RootComponent,
-    settingsRepository: SettingsRepository
+    component: RootComponent
 ) {
     val dialogSlot by component.dialogSlot.subscribeAsState()
+    val settings by component.settingsState.collectAsState()
 
-    ProvidePreferenceLocals {
-        val pref by LocalPreferenceFlow.current.collectAsState()
-        LaunchedEffect(Unit) {
-            component.label.collect {
-                when (it) {
-                    is RootStore.Label.ColorConfig -> {
-                        settingsRepository.emitColorValue(it.state, it.color)
-                        when (it.state) {
-                            ColorPickerState.COLOR_TEXT ->
-                                pref.toMutablePreferences()["textColor"] = it.color
-                            ColorPickerState.COLOR_BACK ->
-                                pref.toMutablePreferences()["backColor"] = it.color
-                            ColorPickerState.COLOR_LINK ->
-                                pref.toMutablePreferences()["linkColor"] = it.color
+    val detailsSlot by component.detailsSlot.subscribeAsState()
+    val settingsSlot by component.settingsSlot.subscribeAsState()
+
+    val detailsSlotIsNotEmpty = detailsSlot.child != null
+
+    val settingsChild = settingsSlot.child?.instance
+    val showSettingsInExtraPane = settingsChild != null && settingsChild.isLocalSettings
+    val showSettingsAsOverlay = settingsChild != null && !settingsChild.isLocalSettings
+
+    val directive = calculatePaneScaffoldDirective(
+        currentWindowAdaptiveInfoV2()
+    )
+
+    val scaffoldValue = calculateThreePaneScaffoldValue(
+        maxHorizontalPartitions = directive.maxHorizontalPartitions,
+        maxVerticalPartitions = directive.maxVerticalPartitions,
+        adaptStrategies = ListDetailPaneScaffoldDefaults.adaptStrategies(),
+        destinationHistory = remember(detailsSlot.child, settingsSlot.child) {
+            buildList {
+                add(ThreePaneScaffoldDestinationItem<Any>(pane = ListDetailPaneScaffoldRole.List))
+
+                if (detailsSlot.child != null) {
+                    add(ThreePaneScaffoldDestinationItem<Any>(pane = ListDetailPaneScaffoldRole.Detail))
+                }
+
+                if (showSettingsInExtraPane) {
+                    add(ThreePaneScaffoldDestinationItem<Any>(pane = ListDetailPaneScaffoldRole.Extra))
+                }
+            }
+        }
+    )
+
+    QuoroscopeTheme(
+        themeMode = settings.appThemeMode
+    ) {
+        dialogSlot.child?.instance?.also {
+            DialogsMainContent(it, settings)
+        }
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            Surface(
+                color = MaterialTheme.colorScheme.background
+            ) {
+                ListDetailPaneScaffold(
+                    directive = directive,
+                    value = remember(scaffoldValue, detailsSlotIsNotEmpty, showSettingsInExtraPane) {
+                        ThreePaneScaffoldValue(
+                            primary = if (detailsSlotIsNotEmpty) scaffoldValue.primary else PaneAdaptedValue.Hidden,
+                            secondary = scaffoldValue.secondary,
+                            tertiary = if (showSettingsInExtraPane) scaffoldValue.tertiary else PaneAdaptedValue.Hidden
+                        )
+                    },
+                    listPane = {
+                        AnimatedPane {
+                            StockContent(component.stockComponent)
+                        }
+                    },
+                    detailPane = {
+                        AnimatedPane {
+                            detailsSlot.child?.instance?.also {
+                                DetailsContent(it)
+                            }
+                        }
+                    },
+                    extraPane = {
+                        AnimatedPane {
+                            if (showSettingsInExtraPane) { SettingsContent(settingsChild) }
                         }
                     }
-                    is RootStore.Label.ImageConfig -> {
-                        settingsRepository.emitImageConf(it.state, it.config)
-                        when (it.state) {
-                            InputState.INPUT_IMAGE_WIDTH ->
-                                pref.toMutablePreferences()["manualImageWidthPref"] = it.config
-                            InputState.INPUT_IMAGE_HEIGHT ->
-                                pref.toMutablePreferences()["manualImageHeightPref"] = it.config
-                        }
+                )
+            }
+
+            AnimatedVisibility(
+                visible = showSettingsAsOverlay,
+                enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    if (showSettingsAsOverlay) {
+                        SettingsContent(settingsChild)
                     }
                 }
             }
         }
-        settingsRepository.emitMap(pref.asMap())
-    }
-
-    val settings by settingsRepository.settingsFlow.collectAsState()
-
-    QuoroscopeTheme(
-        darkTheme =
-            when {
-                settings.theme.contains("auto") -> isSystemInDarkTheme()
-                settings.theme.contains("dark") -> true
-                settings.theme.contains("light") -> false
-                else -> false
-            }
-    ) {
-        dialogSlot.child?.instance?.also {
-            DialogsMainContent(it, settingsRepository)
-        }
-
-        ChildPanels(
-            modifier = Modifier.background(MaterialTheme.colorScheme.surface),
-            panels = component.childPanel,
-            mainChild = { StockContent(it.instance, settings) },
-            detailsChild = { DetailsContent(it.instance, settings) },
-            extraChild = { SettingsContent(it.instance, settingsRepository) },
-            animators = ChildPanelsAnimators(single = fade() + scale(), dual = fade() to fade()),
-//            predictiveBackParams = { // See the docs below
-//                PredictiveBackParams(
-//                    backHandler = component.backHandler,
-//                    onBack = component::onBackClicked,
-//                    animatable = ::materialPredictiveBackAnimatable,
-//                )
-//            },
-        )
     }
 }

@@ -1,6 +1,5 @@
 package com.pixnpunk.quoroscope.mvi
 
-import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import org.koin.core.component.KoinComponent
@@ -15,12 +14,15 @@ class RealRootStore(
         Store<RootStore.Intent, RootStore.State, RootStore.Label> by storeFactory.create(
             name = "RootStore",
             initialState = RootStore.State,
-            bootstrapper = SimpleBootstrapper(
-//                RootStore.Action.StartResendGameSetting
-            ),
             executorFactory = {
                 RootExecutor(
-                    get(), get(), get()
+                    get(),
+                    get(),
+                    get(),
+                    get(),
+                    get(),
+                    get(),
+                    get()
                 )
             }
         )

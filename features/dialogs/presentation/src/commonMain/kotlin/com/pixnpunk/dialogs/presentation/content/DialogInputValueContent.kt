@@ -16,22 +16,38 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import be.digitalia.compose.htmlconverter.htmlToAnnotatedString
+import org.jetbrains.compose.resources.stringResource
+import quoroscope.features.dialogs.presentation.generated.resources.Res
+import quoroscope.features.dialogs.presentation.generated.resources.cancel_button_description
+import quoroscope.features.dialogs.presentation.generated.resources.input_button_description
 
 @Composable
 fun DialogInputValueContent(
+    isError: Boolean,
     initialValue: String,
+    supportValue: String,
+    supportErrorValue: String,
+    keyboardOptions: KeyboardOptions,
     label: @Composable () -> Unit,
     inputValue: (String) -> Unit,
-    keyboardOptions: KeyboardOptions,
+    cleanError: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    var enterValue by remember { mutableStateOf(initialValue) }
+    var enterValue by remember {
+        mutableStateOf(
+            htmlToAnnotatedString(initialValue).text
+        )
+    }
 
     val isEnable = when (keyboardOptions.keyboardType) {
         KeyboardType.Number -> enterValue.toIntOrNull() != null
+        KeyboardType.Unspecified -> true
         else -> false
     }
 
@@ -42,10 +58,35 @@ fun DialogInputValueContent(
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = enterValue,
-            onValueChange = { enterValue = it },
+            onValueChange = { enterValue = it; if (isError) cleanError() },
             label = label,
             singleLine = true,
-            keyboardOptions = keyboardOptions
+            isError = isError,
+            keyboardOptions = keyboardOptions,
+            supportingText = {
+                if (isError) {
+                    val annotatedError = remember(supportValue) {
+                        htmlToAnnotatedString(supportErrorValue)
+                    }
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clearAndSetSemantics { contentDescription = annotatedError.text },
+                        text = annotatedError,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                } else if (supportValue.isNotBlank()) {
+                    val annotatedSupport = remember(supportValue) {
+                        htmlToAnnotatedString(supportValue)
+                    }
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clearAndSetSemantics { contentDescription = annotatedSupport.text },
+                        text = annotatedSupport
+                    )
+                }
+            }
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -54,16 +95,13 @@ fun DialogInputValueContent(
             TextButton(
                 onClick = onDismiss
             ) {
-                Text("Cancel")
+                Text(stringResource(Res.string.cancel_button_description))
             }
             TextButton(
-                onClick = {
-                    inputValue(enterValue)
-                    onDismiss()
-                },
+                onClick = { inputValue(enterValue); onDismiss() },
                 enabled = isEnable
             ) {
-                Text("Enter")
+                Text(stringResource(Res.string.input_button_description))
             }
         }
     }

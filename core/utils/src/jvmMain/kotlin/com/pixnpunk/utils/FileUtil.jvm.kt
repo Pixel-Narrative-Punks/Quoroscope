@@ -1,5 +1,6 @@
 package com.pixnpunk.utils
 
+import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.DownloadStatus
 import com.pixnpunk.dto.ProgressState
 import io.ktor.util.cio.*
@@ -24,29 +25,40 @@ import java.text.DecimalFormat
 import kotlin.io.path.Path
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.isDirectory
+import kotlin.io.path.name
+import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.pathString
 import kotlin.math.log10
 import kotlin.math.pow
 
 actual object FileUtil {
-    actual fun String.receiveRelPath(): String =
-        File(this).let {
-            return@let if (it.exists()) {
-                it.parentFile.name + File.separator + it.nameWithoutExtension
-            } else {
-                ""
-            }
+
+    actual fun String.receiveBaseName(): String = Path(this).nameWithoutExtension
+
+    actual fun String.receiveFullName(): String = Path(this).name
+
+    actual fun String.receiveDirRelPath(): String =
+        Path(this).let {
+            val count = it.nameCount
+            if (count <= 2) { return@let it.pathString }
+            val tail = it.subpath(count - 2, count).pathString
+            "${it.root?.pathString ?: ""}...${File.separator}${tail}"
         }
 
-    actual fun formatFileSize(size: Long, numCountInfo: Int): String {
-        if (size <= 0) {
-            return "0"
-        }
+    actual fun String.receiveFileRelPath(): String = this.receiveFullName()
+
+    actual fun formatFileSize(size: Long, prefFormat: BinaryPrefFormat): String {
+        if (size <= 0) return "0"
+
+        val numCountInfo = if (prefFormat == BinaryPrefFormat.SI) 1000 else 1024
+
         var units = arrayOfNulls<String>(0)
         if (numCountInfo == 1000) {
             units = arrayOf("B", "KB", "MB", "GB", "TB")
         } else if (numCountInfo == 1024) {
             units = arrayOf("B", "KiB", "MiB", "GiB", "TiB")
         }
+
         val digitGroups = (log10(size.toDouble()) / log10(numCountInfo.toDouble())).toInt()
         return (DecimalFormat("#,##0.#").format(
             size / numCountInfo.toDouble().pow(digitGroups.toDouble())

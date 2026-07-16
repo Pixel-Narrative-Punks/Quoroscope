@@ -10,6 +10,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import org.jetbrains.compose.resources.pluralStringResource
+import quoroscope.features.stock.presentation.generated.resources.Res
+import quoroscope.features.stock.presentation.generated.resources.selected_items_count
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -20,12 +23,20 @@ fun StockDeleteAppBar(
     deleteEntries: () -> Unit
 ) {
     TopAppBar(
-        title = { Text("Selected $deleteSetSize element's") },
+        title = {
+            Text(
+                pluralStringResource(
+                    Res.plurals.selected_items_count,
+                    deleteSetSize,
+                    deleteSetSize
+                )
+            )
+        },
         navigationIcon = {
             IconButton(onClick = stopDeleteMode) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                    contentDescription = ""
+                    contentDescription = null
                 )
             }
         },
@@ -33,13 +44,13 @@ fun StockDeleteAppBar(
             IconButton(onClick = selectAll) {
                 Icon(
                     imageVector = Icons.Default.SelectAll,
-                    contentDescription = ""
+                    contentDescription = null
                 )
             }
             IconButton(onClick = deleteEntries) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = ""
+                    contentDescription = null
                 )
             }
         },

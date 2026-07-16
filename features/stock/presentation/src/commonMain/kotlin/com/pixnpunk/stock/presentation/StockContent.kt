@@ -21,24 +21,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import com.arkivanov.decompose.extensions.compose.stack.Children
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import com.pixnpunk.addons.presentation.AddonsContent
-import com.pixnpunk.dto.BinaryPrefFormat
-import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.dto.SettingsEntity
-import com.pixnpunk.news.presentation.NewsContent
-import com.pixnpunk.stock.presentation.content.StockDefaultBottomBar
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.pixnpunk.stock.domain.model.TabState
 import com.pixnpunk.stock.presentation.content.StockDeleteAppBar
 import com.pixnpunk.stock.presentation.content.StockFloatButton
 import com.pixnpunk.stock.presentation.content.StockInstalledChild
@@ -49,12 +43,18 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StockContent(
-    component: StockComponent,
-    settings: SettingsEntity
+    component: StockComponent
 ) {
-    val stack by component.childStack.subscribeAsState()
-    val activeComponent = stack.active.instance
+    val focusManager = LocalFocusManager.current
+
     val model by component.model.collectAsState()
+    val settings by component.settingsState.collectAsState()
+
+    val lazyLocalPagingItems = component.gameLocalPageFlow.collectAsLazyPagingItems()
+
+    val authorSuggestions by component.authorSuggestionsFlow.collectAsState(emptyList())
+    val translatorSuggestions by component.translatorSuggestionsFlow.collectAsState(emptyList())
+
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -63,56 +63,77 @@ fun StockContent(
     val gridState = rememberLazyGridState()
     val listState = rememberLazyListState()
 
-    val setToDelete = rememberSaveable { mutableStateSetOf<GameEntry>() }
-    val setAllEntries = rememberSaveable { mutableStateSetOf<GameEntry>() }
-
     val isAtTop by remember {
         derivedStateOf {
             gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset == 0
         }
     }
 
-    val isStockChildren = activeComponent is StockComponent.Child.StockChild
-
     val pagerState = rememberPagerState { TabState.entries.size }
 
-    val numCountInfo =
-        when (settings.binaryPref) {
-            BinaryPrefFormat.SI -> 1000
-            BinaryPrefFormat.ISO -> 1024
+    LaunchedEffect(gridState.isScrollInProgress) {
+        if (gridState.isScrollInProgress) {
+            focusManager.clearFocus()
         }
+    }
+
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (listState.isScrollInProgress) {
+            focusManager.clearFocus()
+        }
+    }
+
+    LaunchedEffect(pagerState.isScrollInProgress) {
+        if (pagerState.isScrollInProgress) {
+            focusManager.clearFocus()
+        }
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            if (!isStockChildren || !model.isDeleteModeActive) {
+            if (!model.isDeleteModeActive) {
                 StockSearchAppBar(
                     pagerState = pagerState,
-                    isStockChildren = isStockChildren,
-                    searchEntries = component::searchEntries,
+                    sortOrder = model.sortOrder,
+                    selectSortOrder = component::changeSortOrder,
+                    sortBy = model.sortBy,
+                    selectSortBy = component::changeSortBy,
+                    lang = model.selectedLang,
+                    selectSortLang = component::changeSortLang,
+                    searchQuery = model.searchQuery,
+                    isSearchExpanded = model.isSearchExpanded,
+                    activeTokens = model.activeTokens,
+                    recentSearches = model.recentSearches,
+                    suggestedAuthors = authorSuggestions,
+                    suggestedTranslators = translatorSuggestions,
+                    toggleSearch = component::toggleSearch,
+                    updateSearchQuery = component::updateSearchQuery,
+                    executeSearch = component::executeSearch,
+                    addToken = component::addToken,
+                    removeToken = component::removeToken,
                     navigateToSettings = component.navigateToSettings
                 )
             } else {
                 StockDeleteAppBar(
-                    deleteSetSize = setToDelete.size,
-                    stopDeleteMode = {
-                        setToDelete.clear()
-                        setAllEntries.clear()
-                        component.stopDeleteMode()
+                    deleteSetSize = model.selectedGameIds.size,
+                    stopDeleteMode = component::exitDeleteMode,
+                    selectAll = {
+                        component.addAllGames(
+                            lazyLocalPagingItems
+                                .itemSnapshotList
+                                .items
+                                .map { it.id }
+                                .toSet()
+                        )
                     },
-                    selectAll = { setToDelete.addAll(setAllEntries) },
-                    deleteEntries = {
-                        setAllEntries.clear()
-                        component.deleteEntries(setToDelete.toSet())
-                        setToDelete.clear()
-                    },
+                    deleteEntries = component::deleteEntries,
                 )
             }
         },
         floatingActionButton = {
             AnimatedVisibility(
-                visible = isAtTop
-                        && pagerState.currentPage == TabState.INSTALLED.ordinal
+                visible = pagerState.currentPage == TabState.INSTALLED.ordinal
                         && !model.isDeleteModeActive,
                 enter = fadeIn(),
                 exit = fadeOut()
@@ -122,7 +143,7 @@ fun StockContent(
                     icon = {
                         Icon(
                             imageVector = Icons.Filled.Add,
-                            contentDescription = "Add new game"
+                            contentDescription = null
                         )
                     }
                 )
@@ -153,57 +174,36 @@ fun StockContent(
                     icon = {
                         Icon(
                             imageVector = Icons.Filled.ArrowUpward,
-                            contentDescription = "Scroll to top"
+                            contentDescription = null
                         )
                     }
                 )
             }
         },
-        bottomBar = {
-            if (!model.isDeleteModeActive) {
-                StockDefaultBottomBar(
-                    component,
-                    activeComponent,
-                    isStockChildren,
-                    scrollBehavior
-                )
-            }
-        },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
-        Children(
-            modifier = Modifier.padding(paddingValues),
-            stack = stack
-        ) { child ->
-            when (val instance = child.instance) {
-                is StockComponent.Child.StockChild -> {
-                    HorizontalPager(
-                        modifier = Modifier.fillMaxHeight(),
-                        verticalAlignment = Alignment.Top,
-                        state = pagerState
-                    ) {
-                        when (it) {
-                            TabState.LIBRARY.ordinal ->
-                                StockLibraryChild(
-                                    component,
-                                    numCountInfo,
-                                    gridState
-                                )
+        HorizontalPager(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxHeight(),
+            verticalAlignment = Alignment.Top,
+            state = pagerState
+        ) {
+            when (it) {
+                TabState.LIBRARY.ordinal ->
+                    StockLibraryChild(
+                        component = component,
+                        prefFormat = settings.binaryPref,
+                        gridState = gridState
+                    )
 
-                            TabState.INSTALLED.ordinal ->
-                                StockInstalledChild(
-                                    component,
-                                    numCountInfo,
-                                    listState,
-                                    setToDelete,
-                                    setAllEntries,
-                                    model.isDeleteModeActive
-                                )
-                        }
-                    }
-                }
-                is StockComponent.Child.AddonsChild -> AddonsContent(instance.component)
-                is StockComponent.Child.NewsChild -> NewsContent(instance.component)
+                TabState.INSTALLED.ordinal ->
+                    StockInstalledChild(
+                        component = component,
+                        prefFormat = settings.binaryPref,
+                        listState = listState,
+                        lazyPagingItems = lazyLocalPagingItems
+                    )
             }
         }
     }

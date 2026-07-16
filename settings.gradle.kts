@@ -29,12 +29,6 @@ dependencyResolutionManagement {
     }
 }
 
-plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
-}
-
-include()
-
 include(
     // app
     ":composeApp",
@@ -64,6 +58,8 @@ include(
     ":features:news:presentation",
     // settings
     ":features:settings",
+    ":features:settings:data",
+    ":features:settings:domain",
     ":features:settings:presentation",
     // stock
     ":features:stock",

@@ -1,17 +1,9 @@
 package com.pixnpunk.stock.presentation.di
 
-import com.pixnpunk.stock.data.di.dataModule
-import com.pixnpunk.stock.domain.di.domainModule
-import com.pixnpunk.stock.presentation.SourceViewModel
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.module
-
-val sourceModule = module {
-    singleOf(::SourceViewModel)
-}
+import com.pixnpunk.stock.data.di.stockDataModule
+import com.pixnpunk.stock.domain.di.stockDomainModule
 
 val featureStockModules = listOf(
-    dataModule,
-    domainModule,
-    sourceModule
+    stockDataModule(),
+    stockDomainModule,
 )

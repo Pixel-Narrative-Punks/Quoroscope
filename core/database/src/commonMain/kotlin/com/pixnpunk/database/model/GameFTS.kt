@@ -1,27 +1,22 @@
 package com.pixnpunk.database.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Fts4
-import com.pixnpunk.dto.GameListType
+import androidx.room.FtsOptions
 
 @Entity(tableName = "game_fts")
-@Fts4(contentEntity = GameEntity::class)
+@Fts4(
+    contentEntity = GameEntity::class,
+    tokenizer = FtsOptions.TOKENIZER_UNICODE61
+)
 data class GameFTS(
-    val id: Long = 0,
-    val listId: GameListType = GameListType.Unknown,
+    @ColumnInfo("author", defaultValue = "")
     val author: String = "",
+    @ColumnInfo("portedBy", defaultValue = "")
     val portedBy: String = "",
-    val version: String = "",
+    @ColumnInfo("title", defaultValue = "")
     val title: String = "",
-    val lang: String = "",
-    val player: String = "",
-    val gameIconPath: String = "",
-    val fileUrl: String = "",
-    val fileSize: Long = 0,
-    val fileExt: String = "",
-    val descUrl: String = "",
-    val pubDate: String = "",
-    val modDate: String = "",
-    val gameDirPath: String = "",
-    val gameFilesPath: List<String> = emptyList()
+    @ColumnInfo("descUrl", defaultValue = "")
+    val descUrl: String = ""
 )

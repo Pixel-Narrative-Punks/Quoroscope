@@ -8,11 +8,13 @@ data class SettingsEntity(
     val typeface: FontTypeface = FontTypeface.DEFAULT,
     val fontSize: Int = 16,
     val isUseGameFont: Boolean = false,
-    val isUseGameTextColor: Boolean = true,
+    val isUseCustomFont: Boolean = false,
+    val customFontPath: String = "",
+    val isTextColorOverride: Boolean = false,
     val textColor: Int = 0xFF000000.toInt(),
-    val isUseGameBackgroundColor: Boolean = true,
+    val isBackColorOverride: Boolean = false,
     val backColor: Int = 0xFFBDBDBD.toInt(),
-    val isUseGameLinkColor: Boolean = true,
+    val isLinkColorOverride: Boolean = false,
     val linkColor: Int = 0xFF0000FF.toInt(),
 
     val isImgLoadDis: Boolean = false,
@@ -32,8 +34,17 @@ data class SettingsEntity(
     val nativeLibFrom: NativeLibAuthors = NativeLibAuthors.SEEDHARTHA,
     val visActsCount: Int = 3,
     val language: String = "",
-    val theme: String = "",
+    val appThemeMode: AppThemeMode = AppThemeMode.SYSTEM,
 
     @Transient
-    val binaryPref: BinaryPrefFormat = BinaryPrefFormat.SI
+    val binaryPref: BinaryPrefFormat = BinaryPrefFormat.SI,
+    @Transient
+    val isYesScrollMain: Boolean = true,
+    @Transient
+    val isYesScrollExtra: Boolean = true,
+    @Transient
+    val isNoSave: Boolean = false,
+    @Transient
+    val isUseHtml: Boolean = false,
 )
+

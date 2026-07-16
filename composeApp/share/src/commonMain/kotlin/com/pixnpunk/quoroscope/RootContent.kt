@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
@@ -27,9 +26,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ExperimentalDecomposeApi
+import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.pixnpunk.addons.presentation.AddonsContent
 import com.pixnpunk.details.presentation.DetailsContent
 import com.pixnpunk.dialogs.presentation.DialogsMainContent
+import com.pixnpunk.news.presentation.NewsContent
+import com.pixnpunk.quoroscope.contents.RootBottomBar
 import com.pixnpunk.quoroscope.theme.QuoroscopeTheme
 import com.pixnpunk.settings.presentation.SettingsContent
 import com.pixnpunk.stock.presentation.StockContent
@@ -39,6 +42,9 @@ import com.pixnpunk.stock.presentation.StockContent
 fun RootContent(
     component: RootComponent
 ) {
+    val rootStack by component.rootStack.subscribeAsState()
+    val activeComponent = rootStack.active.instance
+
     val dialogSlot by component.dialogSlot.subscribeAsState()
     val settings by component.settingsState.collectAsState()
 
@@ -81,52 +87,79 @@ fun RootContent(
             DialogsMainContent(it, settings)
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            Surface(
-                color = MaterialTheme.colorScheme.background
-            ) {
-                ListDetailPaneScaffold(
-                    directive = directive,
-                    value = remember(scaffoldValue, detailsSlotIsNotEmpty, showSettingsInExtraPane) {
-                        ThreePaneScaffoldValue(
-                            primary = if (detailsSlotIsNotEmpty) scaffoldValue.primary else PaneAdaptedValue.Hidden,
-                            secondary = scaffoldValue.secondary,
-                            tertiary = if (showSettingsInExtraPane) scaffoldValue.tertiary else PaneAdaptedValue.Hidden
-                        )
-                    },
-                    listPane = {
-                        AnimatedPane {
-                            StockContent(component.stockComponent)
-                        }
-                    },
-                    detailPane = {
-                        AnimatedPane {
-                            detailsSlot.child?.instance?.also {
-                                DetailsContent(it)
-                            }
-                        }
-                    },
-                    extraPane = {
-                        AnimatedPane {
-                            if (showSettingsInExtraPane) { SettingsContent(settingsChild) }
-                        }
-                    }
-                )
-            }
-
-            AnimatedVisibility(
-                visible = showSettingsAsOverlay,
-                enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-                exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
-                modifier = Modifier.fillMaxSize()
-            ) {
+        RootBottomBar(
+            isAddonsActive = activeComponent is RootComponent.Child.Addons,
+            isStockActive = activeComponent is RootComponent.Child.Stock,
+            isNewsActive = activeComponent is RootComponent.Child.News,
+            activateAddons = component::navigateToAddons,
+            activateStock = component::navigateToStock,
+            activateNews = component::navigateToNews
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    if (showSettingsAsOverlay) {
-                        SettingsContent(settingsChild)
+                    Children(
+                        stack = rootStack
+                    ) { inst ->
+                        when (val instance = inst.instance) {
+                            is RootComponent.Child.Addons -> AddonsContent(instance.component)
+
+                            is RootComponent.Child.News -> NewsContent(instance.component)
+
+                            is RootComponent.Child.Stock -> {
+                                ListDetailPaneScaffold(
+                                    directive = directive,
+                                    value = remember(
+                                        scaffoldValue,
+                                        detailsSlotIsNotEmpty,
+                                        showSettingsInExtraPane
+                                    ) {
+                                        ThreePaneScaffoldValue(
+                                            primary = if (detailsSlotIsNotEmpty) scaffoldValue.primary else PaneAdaptedValue.Hidden,
+                                            secondary = scaffoldValue.secondary,
+                                            tertiary = if (showSettingsInExtraPane) scaffoldValue.tertiary else PaneAdaptedValue.Hidden
+                                        )
+                                    },
+                                    listPane = {
+                                        AnimatedPane {
+                                            StockContent(instance.component)
+                                        }
+                                    },
+                                    detailPane = {
+                                        AnimatedPane {
+                                            detailsSlot.child?.instance?.also {
+                                                DetailsContent(it)
+                                            }
+                                        }
+                                    },
+                                    extraPane = {
+                                        AnimatedPane {
+                                            if (showSettingsInExtraPane) {
+                                                SettingsContent(settingsChild)
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+                        }
                     }
+                }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = showSettingsAsOverlay,
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                if (showSettingsAsOverlay) {
+                    SettingsContent(settingsChild)
                 }
             }
         }

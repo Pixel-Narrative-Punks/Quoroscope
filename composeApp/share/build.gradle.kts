@@ -35,6 +35,7 @@ kotlin {
             implementation(project(":features:details:presentation"))
             implementation(project(":features:settings:presentation"))
             implementation(project(":features:stock:presentation"))
+            implementation(project(":features:news:presentation"))
 
             implementation(libs.compose.adaptive)
             implementation(libs.compose.adaptive.layout)

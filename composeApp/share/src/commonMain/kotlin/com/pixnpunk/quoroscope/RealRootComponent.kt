@@ -1,17 +1,21 @@
 package com.pixnpunk.quoroscope
 
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.child
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
+import com.arkivanov.decompose.router.stack.ChildStack
+import com.arkivanov.decompose.router.stack.StackNavigation
+import com.arkivanov.decompose.router.stack.bringToFront
+import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
+import com.pixnpunk.addons.presentation.RealAddonsComponent
 import com.pixnpunk.details.presentation.RealDetailsComponent
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dialogs.presentation.DialogsConfig
@@ -22,6 +26,7 @@ import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.news.presentation.RealNewsComponent
 import com.pixnpunk.quoroscope.mvi.RealRootStore
 import com.pixnpunk.quoroscope.mvi.RootStore
 import com.pixnpunk.settings.domain.usecase.GetSettingsUseCase
@@ -46,6 +51,8 @@ class RealRootComponent(
 ) : ComponentContext by componentContext, RootComponent, KoinComponent {
 
     private val componentScope = coroutineScope()
+
+    private val rootNavigation = StackNavigation<ChildConfig>()
 
     private val dialogsNavigation = SlotNavigation<DialogsConfig>()
     private val detailsNavigation = SlotNavigation<DetailsConfig>()
@@ -152,6 +159,48 @@ class RealRootComponent(
         }
     }
 
+    override val rootStack: Value<ChildStack<*, RootComponent.Child>> =
+        childStack(
+            source = rootNavigation,
+            key = "RootChildStack",
+            initialConfiguration = ChildConfig.Stock,
+            serializer = serializer(),
+            handleBackButton = true,
+        ) { config, ctx ->
+            when (config) {
+                is ChildConfig.Addons ->
+                    RootComponent.Child.Addons(
+                        RealAddonsComponent(
+                            componentContext = ctx
+                        )
+                    )
+
+                is ChildConfig.News ->
+                    RootComponent.Child.News(
+                        RealNewsComponent(
+                            componentContext = ctx
+                        )
+                    )
+
+                is ChildConfig.Stock ->
+                    RootComponent.Child.Stock(
+                        RealStockComponent(
+                            componentContext = ctx,
+                            showDialogAdd = ::doShowDialog,
+                            navigateToSettings = {
+                                settingsNavigation.activate(
+                                    SettingsConfig(null, "")
+                                )
+                            },
+                            navigateToDetails = {
+                                detailsNavigation.activate(DetailsConfig(it))
+                            },
+                            settingsState = settingsState
+                        )
+                    )
+            }
+        }
+
     override val dialogSlot: Value<ChildSlot<*, DialogsComponent>> =
         childSlot(
             source = dialogsNavigation,
@@ -249,20 +298,6 @@ class RealRootComponent(
                 onDismissed = { settingsNavigation.dismiss() }
             )
         }
-
-    override val stockComponent = RealStockComponent(
-        componentContext = childContext(key = "StockComponent"),
-        showDialogAdd = ::doShowDialog,
-        navigateToSettings = {
-            settingsNavigation.activate(
-                SettingsConfig(null, "")
-            )
-        },
-        navigateToDetails = {
-            detailsNavigation.activate(DetailsConfig(it))
-        },
-        settingsState = settingsState
-    )
 
     private fun remDirSelect() {
         val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
@@ -372,9 +407,30 @@ class RealRootComponent(
             )
         )
 
+    override fun navigateToAddons() =
+        rootNavigation.bringToFront(ChildConfig.Addons)
+
+    override fun navigateToStock() =
+        rootNavigation.bringToFront(ChildConfig.Stock)
+
+    override fun navigateToNews() =
+        rootNavigation.bringToFront(ChildConfig.News)
+
     @Serializable
     data class SettingsConfig(val gameId: Long?, val gameTitle: String)
 
     @Serializable
     data class DetailsConfig(val entry: GameEntry)
+
+    @Serializable
+    sealed interface ChildConfig {
+        @Serializable
+        data object Addons : ChildConfig
+
+        @Serializable
+        data object Stock : ChildConfig
+
+        @Serializable
+        data object News : ChildConfig
+    }
 }

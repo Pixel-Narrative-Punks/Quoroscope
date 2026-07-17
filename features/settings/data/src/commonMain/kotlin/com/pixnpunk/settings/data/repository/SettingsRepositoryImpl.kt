@@ -6,8 +6,12 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.pixnpunk.dto.AppThemeMode
+import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.ColorPickerState
+import com.pixnpunk.dto.FontTypeface
 import com.pixnpunk.dto.InputState
+import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.settings.domain.model.PrefKeys
 import com.pixnpunk.settings.domain.repository.SettingsRepository
@@ -270,40 +274,121 @@ class SettingsRepositoryImpl(
         ),
     )
 
-    override suspend fun updateColorValue(state: ColorPickerState, colorArgb: Int) {
+    override suspend fun updateFontSize(fontSize: Int) {
+        targetDataStore.edit { it[intPreferencesKey(PrefKeys.FONT_SIZE)] = fontSize }
+    }
+
+    override suspend fun updateFontStyle(typeface: FontTypeface) {
+        targetDataStore.edit { it[stringPreferencesKey(PrefKeys.FONT_STYLE)] = typeface.name }
+    }
+
+    override suspend fun toggleCustomFont(isEnabled: Boolean, fontPath: String?) {
         targetDataStore.edit { prefs ->
-            when (state) {
-                ColorPickerState.COLOR_TEXT ->
-                    prefs[intPreferencesKey(PrefKeys.TEXT_COLOR)] = colorArgb
-
-                ColorPickerState.COLOR_BACK ->
-                    prefs[intPreferencesKey(PrefKeys.BACK_COLOR)] = colorArgb
-
-                ColorPickerState.COLOR_LINK ->
-                    prefs[intPreferencesKey(PrefKeys.LINK_COLOR)] = colorArgb
+            prefs[booleanPreferencesKey(PrefKeys.CUSTOM_FONT_ENABLED)] = isEnabled
+            if (fontPath != null) {
+                prefs[stringPreferencesKey(PrefKeys.CUSTOM_FONT_PATH)] = fontPath
             }
         }
     }
 
-    override suspend fun restoreColorValue(state: ColorPickerState) =
-        updateColorValue(
-            state, when (state) {
-                ColorPickerState.COLOR_TEXT -> defValue.textColor
-                ColorPickerState.COLOR_BACK -> defValue.backColor
-                ColorPickerState.COLOR_LINK -> defValue.linkColor
+    override suspend fun toggleColorOverride(state: ColorPickerState, isOverride: Boolean) {
+        targetDataStore.edit { prefs ->
+            when (state) {
+                ColorPickerState.COLOR_TEXT -> prefs[booleanPreferencesKey(PrefKeys.TEXT_COLOR_OVERRIDE)] = isOverride
+                ColorPickerState.COLOR_BACK -> prefs[booleanPreferencesKey(PrefKeys.BACK_COLOR_OVERRIDE)] = isOverride
+                ColorPickerState.COLOR_LINK -> prefs[booleanPreferencesKey(PrefKeys.LINK_COLOR_OVERRIDE)] = isOverride
             }
-        )
+        }
+    }
+
+    override suspend fun updateColorValue(state: ColorPickerState, colorArgb: Int) {
+        targetDataStore.edit { prefs ->
+            when (state) {
+                ColorPickerState.COLOR_TEXT -> prefs[intPreferencesKey(PrefKeys.TEXT_COLOR)] = colorArgb
+                ColorPickerState.COLOR_BACK -> prefs[intPreferencesKey(PrefKeys.BACK_COLOR)] = colorArgb
+                ColorPickerState.COLOR_LINK -> prefs[intPreferencesKey(PrefKeys.LINK_COLOR)] = colorArgb
+            }
+        }
+    }
+
+    override suspend fun restoreColorValue(state: ColorPickerState) {
+        val defValue = SettingsEntity()
+        val defaultColor = when (state) {
+            ColorPickerState.COLOR_TEXT -> defValue.textColor
+            ColorPickerState.COLOR_BACK -> defValue.backColor
+            ColorPickerState.COLOR_LINK -> defValue.linkColor
+        }
+        updateColorValue(state, defaultColor)
+    }
+
+    override suspend fun toggleImageLoading(isDisabled: Boolean) {
+        targetDataStore.edit { it[booleanPreferencesKey(PrefKeys.IMG_LOAD_DISABLE)] = isDisabled }
+    }
+
+    override suspend fun toggleAutoImageSize(state: InputState, isAuto: Boolean) {
+        targetDataStore.edit { prefs ->
+            when (state) {
+                InputState.INPUT_IMAGE_WIDTH -> prefs[booleanPreferencesKey(PrefKeys.IMG_AUTO_WIDTH)] = isAuto
+                InputState.INPUT_IMAGE_HEIGHT -> prefs[booleanPreferencesKey(PrefKeys.IMG_AUTO_HEIGHT)] = isAuto
+            }
+        }
+    }
 
     override suspend fun updateImageSize(state: InputState, value: Int) {
         targetDataStore.edit { prefs ->
             when (state) {
-                InputState.INPUT_IMAGE_WIDTH ->
-                    prefs[intPreferencesKey(PrefKeys.IMG_MANUAL_WIDTH)] = value
-
-                InputState.INPUT_IMAGE_HEIGHT ->
-                    prefs[intPreferencesKey(PrefKeys.IMG_MANUAL_HEIGHT)] = value
+                InputState.INPUT_IMAGE_WIDTH -> prefs[intPreferencesKey(PrefKeys.IMG_MANUAL_WIDTH)] = value
+                InputState.INPUT_IMAGE_HEIGHT -> prefs[intPreferencesKey(PrefKeys.IMG_MANUAL_HEIGHT)] = value
             }
         }
+    }
+
+    override suspend fun toggleFullscreenImages(isImmersive: Boolean) {
+        targetDataStore.edit { it[booleanPreferencesKey(PrefKeys.IMG_IMMERSIVE)] = isImmersive }
+    }
+
+    override suspend fun toggleImageDebug(isEnabled: Boolean) {
+        targetDataStore.edit { it[booleanPreferencesKey(PrefKeys.IMG_DEBUG)] = isEnabled }
+    }
+
+    override suspend fun toggleSound(isEnabled: Boolean) {
+        targetDataStore.edit { it[booleanPreferencesKey(PrefKeys.AUDIO_ENABLED)] = isEnabled }
+    }
+
+    override suspend fun toggleVideoMute(isMuted: Boolean) {
+        targetDataStore.edit { it[booleanPreferencesKey(PrefKeys.VIDEO_MUTE)] = isMuted }
+    }
+
+    override suspend fun toggleAudioDebug(isEnabled: Boolean) {
+        targetDataStore.edit { it[booleanPreferencesKey(PrefKeys.AUDIO_DEBUG)] = isEnabled }
+    }
+
+    override suspend fun updateLanguage(langCode: String) {
+        targetDataStore.edit { it[stringPreferencesKey(PrefKeys.APP_LANG)] = langCode }
+    }
+
+    override suspend fun updateTheme(theme: AppThemeMode) {
+        targetDataStore.edit { it[stringPreferencesKey(PrefKeys.APP_THEME)] = theme.name }
+    }
+
+    override suspend fun updateBinaryPref(format: BinaryPrefFormat) {
+        targetDataStore.edit { it[stringPreferencesKey(PrefKeys.BINARY_PREF)] = format.name }
+    }
+
+    override suspend fun updateNativeLibVersion(version: NativeLibAuthors) {
+        targetDataStore.edit { it[stringPreferencesKey(PrefKeys.LIB_VERSION)] = version.name }
+    }
+
+    override suspend fun updateActsCount(count: Int) {
+        targetDataStore.edit { it[intPreferencesKey(PrefKeys.ACTS_COUNT)] = count }
+    }
+
+    override suspend fun toggleImmersiveMode(isEnabled: Boolean) {
+        targetDataStore.edit { it[booleanPreferencesKey(PrefKeys.IMMERSIVE_MODE)] = isEnabled }
+    }
+
+    override suspend fun toggleExecString(isEnabled: Boolean) {
+        targetDataStore.edit { it[booleanPreferencesKey(PrefKeys.EXEC_STRING)] = isEnabled }
     }
 
     override suspend fun updateCustomFontPath(filePath: String) {

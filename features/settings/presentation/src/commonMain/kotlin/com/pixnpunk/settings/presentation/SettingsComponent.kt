@@ -4,10 +4,14 @@ import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.value.Value
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
+import kotlinx.coroutines.flow.MutableStateFlow
+import me.zhanghai.compose.preference.Preferences
 
 sealed interface SettingsComponent {
     val childStack: Value<ChildStack<*, Child>>
     val onDismissed: () -> Unit
+
+    val preferencesState: MutableStateFlow<Preferences>
 
     val showColorDialog: (ColorPickerState) -> Unit
     val resetToDefault: (ColorPickerState) -> Unit

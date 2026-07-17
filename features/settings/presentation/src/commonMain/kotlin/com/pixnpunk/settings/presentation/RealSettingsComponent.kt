@@ -11,14 +11,15 @@ import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.SettingsEntity
-import com.pixnpunk.settings.domain.usecase.GetSettingsUseCase
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
+import com.pixnpunk.settings.domain.repository.SettingsRepository
+import com.pixnpunk.settings.presentation.mappers.dispatch
+import com.pixnpunk.settings.presentation.mappers.toMap
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import me.zhanghai.compose.preference.Preferences
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.koin.java.KoinJavaComponent.inject
-import kotlin.getValue
 
 class RealSettingsComponent(
     private val componentContext: ComponentContext,
@@ -33,14 +34,22 @@ class RealSettingsComponent(
 
     override val isLocalSettings: Boolean = gameId != null
 
+    private val scope = coroutineScope()
+
     private val navigation = StackNavigation<ChildConfig>()
 
-    private val getSettingsUseCase: GetSettingsUseCase by inject()
+    private val settingsRepository by inject<SettingsRepository>()
 
-    private val settingsState = getSettingsUseCase().stateIn(
-        scope = coroutineScope(),
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = SettingsEntity()
+    init {
+        scope.launch {
+            settingsRepository.settingsFlow.collect { entity ->
+                preferencesState.value = createProxyPreferences(entity)
+            }
+        }
+    }
+
+    override val preferencesState = MutableStateFlow<Preferences>(
+        createProxyPreferences(SettingsEntity())
     )
 
     override fun moveToChild(config: ChildConfig) = navigation.pushNew(config)
@@ -67,6 +76,28 @@ class RealSettingsComponent(
                 }
             }
         )
+
+    private fun createProxyPreferences(
+        entity: SettingsEntity
+    ) = ProxyMutablePreferences(
+        stateMap = entity.toMap(),
+        onEdit = ::handleUiEdit,
+        onClear = { }
+    )
+
+    private fun handleUiEdit(key: String, value: Any?) {
+        val tempMap = preferencesState.value.asMap().toMutableMap()
+        if (value != null) tempMap[key] = value else tempMap.remove(key)
+        preferencesState.value = ProxyMutablePreferences(
+            tempMap,
+            ::handleUiEdit,
+            {}
+        )
+
+        if (value != null) {
+            scope.launch { settingsRepository.dispatch(key, value) }
+        }
+    }
 
     @Serializable
     sealed class ChildConfig {
